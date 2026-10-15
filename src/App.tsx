@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ConfirmarProvider } from './components/Confirmar';
 import { Layout } from './components/Layout';
 import { Splash } from './components/Splash';
@@ -16,7 +16,8 @@ import Reservas from './pages/Reservas';
 import Veiculos from './pages/Veiculos';
 
 // Dentro do claude.ai a página roda num frame: a navegação fica em memória.
-const Router = import.meta.env.VITE_BACKEND === 'claude' ? MemoryRouter : BrowserRouter;
+// Fora dele (GitHub Pages), as telas ficam no endereço após o # (funciona em qualquer hospedagem estática).
+const Router = import.meta.env.VITE_BACKEND === 'claude' ? MemoryRouter : HashRouter;
 
 export default function App() {
   const [inicio, setInicio] = useState<Inicio | null>(null);

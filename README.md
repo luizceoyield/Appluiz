@@ -53,6 +53,17 @@ Nessa versão:
   banco antes de gravar, então duas pessoas não conseguem reservar o mesmo horário ao mesmo tempo;
 - o botão **Exportar backup** baixa um JSON com todos os dados.
 
+## Link público (GitHub Pages + Supabase), sem login
+
+O site fica em **https://luizceoyield.github.io/Appluiz/** e qualquer pessoa com o link usa sem entrar
+em conta nenhuma. Publicação automática pelo workflow `.github/workflows/publicar-site.yml`.
+
+1. Crie o projeto no Supabase e rode os arquivos de `supabase/migrations/` em ordem (passos abaixo).
+2. No GitHub: **Settings → Secrets and variables → Actions → New repository secret** e crie
+   `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+3. No GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+4. Em **Actions → Publicar site → Run workflow** (ou faça qualquer push). Em ~2 minutos o link funciona.
+
 ## Como colocar no ar (versão Supabase)
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
