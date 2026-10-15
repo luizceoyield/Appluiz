@@ -1,0 +1,135 @@
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { Ban, Flag, Pencil } from 'lucide-react';
+import { cancelarReserva, mensagemErro } from '../lib/api';
+import { useData } from '../lib/DataContext';
+import { fmtKm, fmtPeriodo } from '../lib/format';
+import { useToast } from '../lib/toast';
+import type { Reserva } from '../lib/types';
+import { ConcluirForm } from './ConcluirForm';
+import { Modal } from './Modal';
+import { ReservaForm, type PrefillReserva } from './ReservaForm';
+import { StatusBadge } from './StatusBadge';
+
+type Estado =
+  | { tipo: 'nova'; prefill?: PrefillReserva }
+  | { tipo: 'editar'; reserva: Reserva }
+  | { tipo: 'concluir'; reserva: Reserva }
+  | { tipo: 'detalhe'; reserva: Reserva }
+  | null;
+
+interface Acoes {
+  novaReserva: (prefill?: PrefillReserva) => void;
+  editar: (r: Reserva) => void;
+  concluir: (r: Reserva) => void;
+  detalhar: (r: Reserva) => void;
+  cancelar: (r: Reserva) => Promise<void>;
+}
+
+const Ctx = createContext<Acoes | null>(null);
+
+export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
+  const { recarregar, veiculoPorId, motoristaPorId } = useData();
+  const toast = useToast();
+  const [estado, setEstado] = useState<Estado>(null);
+  const fechar = useCallback(() => setEstado(null), []);
+  const aposGravar = useCallback(() => {
+    setEstado(null);
+    recarregar();
+  }, [recarregar]);
+
+  const cancelar = useCallback(
+    async (r: Reserva) => {
+      const v = veiculoPorId.get(r.veiculo_id);
+      if (!window.confirm(`Cancelar a reserva de ${v?.placa ?? 'veículo'} em ${fmtPeriodo(r.inicio, r.fim)}?\n\nO registro continua guardado no histórico.`)) return;
+      try {
+        await cancelarReserva(r.id);
+        toast('sucesso', 'Reserva cancelada. O horário foi liberado.');
+        aposGravar();
+      } catch (e) {
+        toast('erro', `Não foi possível cancelar: ${mensagemErro(e)}`);
+      }
+    },
+    [veiculoPorId, toast, aposGravar],
+  );
+
+  const acoes: Acoes = {
+    novaReserva: (prefill) => setEstado({ tipo: 'nova', prefill }),
+    editar: (reserva) => setEstado({ tipo: 'editar', reserva }),
+    concluir: (reserva) => setEstado({ tipo: 'concluir', reserva }),
+    detalhar: (reserva) => setEstado({ tipo: 'detalhe', reserva }),
+    cancelar,
+  };
+
+  const r = estado && 'reserva' in estado ? estado.reserva : null;
+
+  return (
+    <Ctx.Provider value={acoes}>
+      {children}
+
+      <Modal aberto={estado?.tipo === 'nova' || estado?.tipo === 'editar'} titulo={estado?.tipo === 'editar' ? 'Editar reserva' : 'Nova reserva / Registro de saída'} onFechar={fechar} largura="max-w-2xl">
+        {(estado?.tipo === 'nova' || estado?.tipo === 'editar') && (
+          <ReservaForm
+            key={estado.tipo === 'editar' ? estado.reserva.id : 'nova'}
+            reserva={estado.tipo === 'editar' ? estado.reserva : undefined}
+            prefill={estado.tipo === 'nova' ? estado.prefill : undefined}
+            onSalvo={aposGravar}
+            onCancelar={fechar}
+          />
+        )}
+      </Modal>
+
+      <Modal aberto={estado?.tipo === 'concluir'} titulo="Concluir reserva" onFechar={fechar}>
+        {estado?.tipo === 'concluir' && <ConcluirForm reserva={estado.reserva} onConcluido={aposGravar} onCancelar={fechar} />}
+      </Modal>
+
+      <Modal aberto={estado?.tipo === 'detalhe'} titulo="Detalhes da reserva" onFechar={fechar}>
+        {estado?.tipo === 'detalhe' && r && (
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="h-10 w-2 rounded-full" style={{ background: veiculoPorId.get(r.veiculo_id)?.cor }} />
+                <div>
+                  <p className="text-lg font-bold text-sicoob-escuro">{veiculoPorId.get(r.veiculo_id)?.placa}</p>
+                  <p className="text-sm text-slate-600">{veiculoPorId.get(r.veiculo_id)?.modelo}</p>
+                </div>
+              </div>
+              <StatusBadge reserva={r} />
+            </div>
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <Item rotulo="Motorista" valor={`${motoristaPorId.get(r.motorista_id)?.nome ?? '—'}`} />
+              <Item rotulo="Cargo" valor={motoristaPorId.get(r.motorista_id)?.cargo ?? '—'} />
+              <Item rotulo="Período" valor={fmtPeriodo(r.inicio, r.fim)} span />
+              <Item rotulo="KM inicial" valor={fmtKm(r.km_inicial)} />
+              <Item rotulo="KM final" valor={r.km_final === null ? '—' : fmtKm(r.km_final)} />
+              <Item rotulo="KM rodados" valor={r.km_rodados === null ? '—' : fmtKm(r.km_rodados)} />
+              <Item rotulo="Destino" valor={r.destino ?? '—'} />
+              {r.finalidade && <Item rotulo="Finalidade" valor={r.finalidade} span />}
+            </dl>
+            {r.status === 'agendada' && (
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <button className="btn-secundario" onClick={() => cancelar(r)}><Ban className="h-4 w-4" /> Cancelar reserva</button>
+                <button className="btn-secundario" onClick={() => setEstado({ tipo: 'editar', reserva: r })}><Pencil className="h-4 w-4" /> Editar</button>
+                <button className="btn-destaque" onClick={() => setEstado({ tipo: 'concluir', reserva: r })}><Flag className="h-4 w-4" /> Concluir (KM final)</button>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </Ctx.Provider>
+  );
+}
+
+function Item({ rotulo, valor, span }: { rotulo: string; valor: string; span?: boolean }) {
+  return (
+    <div className={span ? 'col-span-2' : ''}>
+      <dt className="text-xs uppercase tracking-wide text-slate-500">{rotulo}</dt>
+      <dd className="font-medium text-slate-800">{valor}</dd>
+    </div>
+  );
+}
+
+export function useReservaAcoes() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error('useReservaAcoes precisa estar dentro de <ReservaAcoesProvider>');
+  return ctx;
+}

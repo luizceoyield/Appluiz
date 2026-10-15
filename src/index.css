@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-slate-50 font-sans text-slate-800 antialiased; }
+}
+
+@layer components {
+  .card { @apply rounded-xl border border-slate-200 bg-white shadow-sm; }
+  .rotulo { @apply mb-1 block text-sm font-medium text-slate-700; }
+  .campo {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800
+      focus:border-sicoob-turquesa focus:outline-none focus:ring-2 focus:ring-sicoob-turquesa/30
+      disabled:bg-slate-100 disabled:text-slate-500;
+  }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primario { @apply btn bg-sicoob-escuro text-white hover:bg-sicoob-escuro-2; }
+  .btn-destaque { @apply btn bg-sicoob-turquesa text-white hover:brightness-95; }
+  .btn-secundario { @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50; }
+  .btn-perigo { @apply btn bg-red-600 text-white hover:bg-red-700; }
+  .titulo-pagina { @apply text-2xl font-bold text-sicoob-escuro; }
+}
+
+/* FullCalendar com a identidade Sicoob */
+.fc {
+  --fc-border-color: #e2e8f0;
+  --fc-button-bg-color: #003641;
+  --fc-button-border-color: #003641;
+  --fc-button-hover-bg-color: #0b4a56;
+  --fc-button-hover-border-color: #0b4a56;
+  --fc-button-active-bg-color: #00ae9d;
+  --fc-button-active-border-color: #00ae9d;
+  --fc-today-bg-color: #e0f5f3;
+  --fc-event-border-color: transparent;
+  font-size: 0.85rem;
+}
+.fc .fc-toolbar-title { font-size: 1.15rem; font-weight: 700; color: #003641; }
+.fc .fc-toolbar-title::first-letter { text-transform: uppercase; }
+.fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #334155; text-decoration: none; }
+.fc .fc-daygrid-event { border-radius: 6px; padding: 1px 4px; cursor: pointer; }
+.fc .fc-event-cancelada { opacity: 0.45; text-decoration: line-through; }
+.fc .fc-button { font-size: 0.8rem; text-transform: capitalize; }
+@media (max-width: 640px) {
+  .fc .fc-toolbar { flex-direction: column; gap: 0.5rem; }
+  .fc .fc-toolbar-title { font-size: 1rem; }
+}
