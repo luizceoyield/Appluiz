@@ -4,7 +4,7 @@ const kmFmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
 
 export const fmtData = (iso: string | Date) => dataFmt.format(new Date(iso));
 export const fmtHora = (iso: string | Date) => horaFmt.format(new Date(iso));
-export const fmtKm = (km: number | null | undefined) => `${kmFmt.format(Number(km ?? 0))} km`;
+export const fmtKm = (km: number | null | undefined) => (km === null || km === undefined ? '—' : `${kmFmt.format(Number(km))} km`);
 
 export function fmtPeriodo(inicio: string, fim: string) {
   const a = new Date(inicio);

@@ -143,7 +143,7 @@ function FormVeiculo({ veiculo, corSugerida, onSalvo, onCancelar }: { veiculo?: 
   const [modelo, setModelo] = useState(veiculo?.modelo ?? '');
   const [marca, setMarca] = useState(veiculo?.marca ?? '');
   const [ano, setAno] = useState(veiculo?.ano ? String(veiculo.ano) : '');
-  const [km, setKm] = useState(veiculo ? String(veiculo.km_atual) : '0');
+  const [km, setKm] = useState(veiculo ? String(veiculo.km_atual) : '');
   const [cor, setCor] = useState(veiculo?.cor ?? corSugerida);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -152,12 +152,17 @@ function FormVeiculo({ veiculo, corSugerida, onSalvo, onCancelar }: { veiculo?: 
     e.preventDefault();
     setSalvando(true);
     setErro(null);
+    const kmNum = Number(km.replace(',', '.'));
+    if (km.trim() === '' || !Number.isFinite(kmNum) || kmNum < 0) {
+      setSalvando(false);
+      return setErro('Informe o KM atual do veículo.');
+    }
     const linha = {
       placa: placa.trim().toUpperCase(),
       modelo: modelo.trim(),
       marca: marca.trim() || null,
       ano: ano ? Number(ano) : null,
-      km_atual: Number(km.replace(',', '.')) || 0,
+      km_atual: kmNum,
       cor,
     };
     try {
@@ -191,9 +196,11 @@ function FormVeiculo({ veiculo, corSugerida, onSalvo, onCancelar }: { veiculo?: 
           <input id="modelo" className="campo" required placeholder="Ex.: Strada" value={modelo} onChange={(e) => setModelo(e.target.value)} />
         </div>
         <div className="col-span-2">
-          <label className="rotulo" htmlFor="km">Hodômetro atual (KM)</label>
-          <input id="km" type="number" inputMode="decimal" step="0.1" min={0} className="campo" value={km} onChange={(e) => setKm(e.target.value)} />
-          <p className="mt-1 text-xs text-nevoa-500">Atualizado automaticamente ao concluir cada reserva.</p>
+          <label className="rotulo" htmlFor="km">KM atual do veículo *</label>
+          <input id="km" type="number" inputMode="decimal" step="0.1" min={0} required placeholder="Ex.: 15230" className="campo font-mono" value={km} onChange={(e) => setKm(e.target.value)} />
+          <p className="mt-1 text-xs text-nevoa-500">
+            Leia no painel do veículo. Serve de base para o KM inicial da próxima conclusão e é atualizado sozinho a cada reserva concluída.
+          </p>
         </div>
       </div>
       <div>

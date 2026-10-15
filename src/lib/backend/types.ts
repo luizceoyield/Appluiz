@@ -17,7 +17,6 @@ export interface DadosReserva {
   motorista_id: string;
   inicio: Date;
   fim: Date;
-  km_inicial: number;
   destino: string | null;
   finalidade: string | null;
 }
@@ -31,7 +30,8 @@ export interface Backend {
   assinar(o: Ouvintes): () => void;
   recarregar(): Promise<void>;
   salvarReserva(dados: DadosReserva, id?: string): Promise<void>;
-  concluirReserva(id: string, kmFinal: number): Promise<void>;
+  /** Conclui a reserva registrando o KM inicial e o KM final. */
+  concluirReserva(id: string, kmInicial: number, kmFinal: number): Promise<void>;
   cancelarReserva(id: string): Promise<void>;
   salvarVeiculo(dados: DadosVeiculo, id?: string): Promise<void>;
   salvarMotorista(dados: DadosMotorista, id?: string): Promise<void>;

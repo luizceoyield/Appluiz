@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { CalendarCheck, CheckCircle2, Loader2 } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, Gauge, Loader2 } from 'lucide-react';
 import { ConflitoReservaError, mensagemErro, sobrepoe } from '../lib/backend';
 import { useData } from '../lib/DataContext';
-import { fmtKm, isoDiaLocal, isoHoraLocal, juntarDataHora } from '../lib/format';
+import { isoDiaLocal, isoHoraLocal, juntarDataHora } from '../lib/format';
 import { useToast } from '../lib/toast';
 import type { Reserva } from '../lib/types';
 import { ConflitoAlerta } from './ConflitoAlerta';
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
-  const { backend, veiculos, motoristas, reservas, veiculoPorId } = useData();
+  const { backend, veiculos, motoristas, reservas } = useData();
   const toast = useToast();
 
   const base = reserva ? new Date(reserva.inicio) : prefill?.data ?? new Date();
@@ -35,19 +35,11 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
   const [horaFim, setHoraFim] = useState(
     baseFim ? isoHoraLocal(baseFim) : temHora ? isoHoraLocal(new Date(base.getTime() + 3600_000)) : '12:00',
   );
-  const [kmInicial, setKmInicial] = useState(reserva ? String(reserva.km_inicial) : '');
   const [destino, setDestino] = useState(reserva?.destino ?? '');
   const [finalidade, setFinalidade] = useState(reserva?.finalidade ?? '');
   const [salvando, setSalvando] = useState(false);
   const [conflitosServidor, setConflitosServidor] = useState<Reserva[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-
-  // Ao escolher o veículo, sugere o hodômetro atual como KM inicial.
-  useEffect(() => {
-    if (reserva) return;
-    const v = veiculoPorId.get(veiculoId);
-    if (v) setKmInicial(String(v.km_atual));
-  }, [veiculoId, veiculoPorId, reserva]);
 
   // Mantém a data de retorno coerente quando a data de saída muda.
   useEffect(() => {
@@ -82,11 +74,6 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (!inicio || !fim || intervaloInvalido || ocupado) return;
-    const km = Number(kmInicial.replace(',', '.'));
-    if (!Number.isFinite(km) || km < 0) {
-      setErro('Informe uma quilometragem inicial válida.');
-      return;
-    }
     setSalvando(true);
     setErro(null);
     try {
@@ -96,7 +83,6 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
           motorista_id: motoristaId,
           inicio,
           fim,
-          km_inicial: km,
           destino: destino.trim() || null,
           finalidade: finalidade.trim() || null,
         },
@@ -149,17 +135,6 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
           <label className="rotulo" htmlFor="horaFim">Hora fim *</label>
           <input id="horaFim" type="time" className="campo" required value={horaFim} onChange={(e) => setHoraFim(e.target.value)} />
         </div>
-        <div>
-          <label className="rotulo" htmlFor="kmIni">KM inicial *</label>
-          <input id="kmIni" type="number" inputMode="decimal" min={0} step="0.1" className="campo" required value={kmInicial} onChange={(e) => setKmInicial(e.target.value)} />
-          {veiculoPorId.get(veiculoId) && (
-            <p className="mt-1 text-xs text-nevoa-500">Hodômetro atual: {fmtKm(veiculoPorId.get(veiculoId)!.km_atual)}</p>
-          )}
-        </div>
-        <div>
-          <label className="rotulo">KM final</label>
-          <input className="campo" disabled value="Informado ao concluir a reserva" />
-        </div>
         <div className="sm:col-span-2">
           <label className="rotulo" htmlFor="destino">Destino</label>
           <input id="destino" className="campo" placeholder="Ex.: Agência Centro – Goiânia" value={destino} onChange={(e) => setDestino(e.target.value)} />
@@ -169,6 +144,11 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
           <textarea id="finalidade" rows={2} className="campo" placeholder="Ex.: Visita a cooperados" value={finalidade} onChange={(e) => setFinalidade(e.target.value)} />
         </div>
       </div>
+
+      <p className="flex items-start gap-2 rounded-xl bg-nevoa-50 px-3 py-2.5 text-xs text-nevoa-600">
+        <Gauge className="mt-px h-4 w-4 shrink-0 text-sicoob-turquesa" />
+        O KM inicial e o KM final são informados quando a reserva for concluída.
+      </p>
 
       {intervaloInvalido && (
         <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">

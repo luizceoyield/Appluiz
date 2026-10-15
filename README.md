@@ -7,20 +7,21 @@ Stack: React + Vite + TypeScript + Tailwind · FullCalendar · Recharts · Supab
 
 ## Funcionalidades
 
-- **Reserva / Registro de saída**: veículo, motorista, data e hora de início e fim, KM inicial
-  (sugerido pelo hodômetro do veículo), destino e finalidade.
+- **Reserva / Registro de saída**: veículo, motorista, data e hora de início e fim, destino e
+  finalidade. Não pede KM: a quilometragem é informada só na conclusão.
 - **Prevenção de double-booking**: se `início < fim_existente E fim > início_existente` para o
   mesmo veículo, o app mostra **"Veículo Ocupado neste Horário"** e não grava.
   A regra também está no banco (constraint `EXCLUDE`), então nem duas pessoas salvando
   ao mesmo tempo conseguem gravar reservas sobrepostas.
-- **Conclusão da reserva**: o app pede o **KM final** e o banco calcula
-  `KM rodados = KM final − KM inicial`. O hodômetro do veículo é atualizado automaticamente.
+- **Conclusão da reserva**: o app pede o **KM inicial** (já sugerido com o último KM registrado do
+  veículo) e o **KM final**, e calcula `KM rodados = KM final − KM inicial`. O KM do veículo é
+  atualizado e vira a base da próxima conclusão.
 - **Calendário mensal**, com cada veículo em uma cor (placa visível no dia). Ao clicar em um dia,
   o app mostra se há reservas naquele dia (e quais veículos estão livres).
   Tem filtro por veículo e atualização em tempo real.
 - **Dashboard**: saídas no mês, KM rodados no mês, veículos disponíveis agora, reservas aguardando
   KM final, gráfico de horários de pico, gráfico de KM rodados por veículo e próximas saídas.
-- **Cadastros** de veículos (placa, marca, modelo, ano, hodômetro, cor no calendário) e
+- **Cadastros** de veículos (placa, marca, modelo, ano, **KM atual obrigatório**, cor no calendário) e
   motoristas (nome, **cargo**, telefone).
 - Sem login. Layout responsivo (celular com navegação inferior; desktop com menu lateral).
 
@@ -55,7 +56,7 @@ Nessa versão:
 ## Como colocar no ar (versão Supabase)
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
-2. Em **SQL Editor**, cole e execute `supabase/migrations/20261015000000_gestao_frota.sql`.
+2. Em **SQL Editor**, execute os arquivos de `supabase/migrations/` em ordem (pelo nome).
    O script pode ser executado de novo sem perder dados.
 3. Copie `.env.example` para `.env` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
    (Supabase → *Project Settings → API*).

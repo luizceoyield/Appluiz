@@ -100,7 +100,7 @@ function paraMotorista(d: DocSnap): Motorista {
 
 function paraReserva(d: DocSnap): Reserva {
   const x = d.data() ?? {};
-  const kmIni = Number(x.km_inicial ?? 0);
+  const kmIni = num(x.km_inicial);
   const kmFim = num(x.km_final);
   return {
     id: d.id,
@@ -110,7 +110,7 @@ function paraReserva(d: DocSnap): Reserva {
     fim: String(x.fim ?? ''),
     km_inicial: kmIni,
     km_final: kmFim,
-    km_rodados: kmFim === null ? null : Math.round((kmFim - kmIni) * 10) / 10,
+    km_rodados: kmFim === null || kmIni === null ? null : Math.round((kmFim - kmIni) * 10) / 10,
     destino: (x.destino as string) ?? null,
     finalidade: (x.finalidade as string) ?? null,
     status: (x.status as Reserva['status']) ?? 'agendada',
@@ -196,13 +196,18 @@ export function criarBackendClaude(db: DB): Backend {
 
       const campos = { ...dados, inicio: dados.inicio.toISOString(), fim: dados.fim.toISOString() };
       if (id) await alterar('reservas', id, 'editado', campos);
-      else await criar('reservas', { ...campos, status: 'agendada', km_final: null, concluida_em: null, cancelada_em: null });
+      else await criar('reservas', { ...campos, status: 'agendada', km_inicial: null, km_final: null, concluida_em: null, cancelada_em: null });
     },
 
-    async concluirReserva(id, kmFinal) {
+    async concluirReserva(id, kmInicial, kmFinal) {
+      if (!(kmInicial >= 0) || !(kmFinal >= kmInicial)) throw new Error('O KM final não pode ser menor que o KM inicial.');
       const r = estado.reservas.find((x) => x.id === id);
-      if (r && kmFinal < r.km_inicial) throw new Error('O KM final não pode ser menor que o KM inicial.');
-      await alterar('reservas', id, 'concluido', { status: 'concluida', km_final: kmFinal, concluida_em: agora() });
+      await alterar('reservas', id, 'concluido', {
+        status: 'concluida',
+        km_inicial: kmInicial,
+        km_final: kmFinal,
+        concluida_em: agora(),
+      });
       // Atualiza o hodômetro do veículo (nunca para trás).
       const v = r && estado.veiculos.find((x) => x.id === r.veiculo_id);
       if (v && kmFinal > v.km_atual) await alterar('veiculos', v.id, 'hodometro', { km_atual: kmFinal });

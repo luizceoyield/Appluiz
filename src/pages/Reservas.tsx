@@ -97,10 +97,12 @@ export default function Reservas() {
                 </div>
                 <p className="mt-1 text-sm text-nevoa-700">{motoristaPorId.get(r.motorista_id)?.nome}</p>
                 <p className="text-xs text-nevoa-500">{fmtPeriodo(r.inicio, r.fim)}{r.destino ? ` · ${r.destino}` : ''}</p>
-                <p className="mt-1 text-xs text-nevoa-500">
-                  KM {fmtKm(r.km_inicial)} → {r.km_final === null ? '—' : fmtKm(r.km_final)}
-                  {r.km_rodados !== null && <strong className="text-sicoob-escuro"> · {fmtKm(r.km_rodados)} rodados</strong>}
-                </p>
+                {r.status === 'concluida' && (
+                  <p className="mt-1 text-xs text-nevoa-500">
+                    KM {fmtKm(r.km_inicial)} → {fmtKm(r.km_final)}
+                    <strong className="text-sicoob-escuro"> · {fmtKm(r.km_rodados)} rodados</strong>
+                  </p>
+                )}
                 {r.status === 'agendada' && !somenteLeitura && <div className="mt-3">{acoes(r)}</div>}
               </li>
             ))}

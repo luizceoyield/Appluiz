@@ -22,7 +22,7 @@ export default function Configuracao({ motivo }: { motivo: 'config' | 'sem-acess
         <h1 className="mt-6 text-xl font-bold text-sicoob-escuro">Conecte o banco de dados</h1>
         <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-nevoa-700">
           <li>Crie um projeto em <strong>supabase.com</strong>.</li>
-          <li>No <strong>SQL Editor</strong>, execute o arquivo <code className="rounded bg-nevoa-100 px-1">supabase/migrations/20261015000000_gestao_frota.sql</code>.</li>
+          <li>No <strong>SQL Editor</strong>, execute os arquivos de <code className="rounded bg-nevoa-100 px-1">supabase/migrations/</code> em ordem.</li>
           <li>
             Defina as variáveis <code className="rounded bg-nevoa-100 px-1">VITE_SUPABASE_URL</code> e{' '}
             <code className="rounded bg-nevoa-100 px-1">VITE_SUPABASE_ANON_KEY</code> (arquivo <code>.env</code>, veja <code>.env.example</code>).

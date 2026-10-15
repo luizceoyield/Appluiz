@@ -108,10 +108,16 @@ export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
               <Item rotulo="Motorista" valor={`${motoristaPorId.get(r.motorista_id)?.nome ?? '—'}`} />
               <Item rotulo="Cargo" valor={motoristaPorId.get(r.motorista_id)?.cargo ?? '—'} />
               <Item rotulo="Período" valor={fmtPeriodo(r.inicio, r.fim)} span />
-              <Item rotulo="KM inicial" valor={fmtKm(r.km_inicial)} />
-              <Item rotulo="KM final" valor={r.km_final === null ? '—' : fmtKm(r.km_final)} />
-              <Item rotulo="KM rodados" valor={r.km_rodados === null ? '—' : fmtKm(r.km_rodados)} />
-              <Item rotulo="Destino" valor={r.destino ?? '—'} />
+              <Item rotulo="Destino" valor={r.destino ?? '—'} span />
+              {r.status === 'concluida' ? (
+                <>
+                  <Item rotulo="KM inicial" valor={fmtKm(r.km_inicial)} />
+                  <Item rotulo="KM final" valor={fmtKm(r.km_final)} />
+                  <Item rotulo="KM rodados" valor={fmtKm(r.km_rodados)} span />
+                </>
+              ) : (
+                r.status === 'agendada' && <Item rotulo="Quilometragem" valor="Informada ao concluir a reserva" span />
+              )}
               {r.finalidade && <Item rotulo="Finalidade" valor={r.finalidade} span />}
             </dl>
             {r.status === 'agendada' && !somenteLeitura && (

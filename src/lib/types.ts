@@ -27,7 +27,7 @@ export interface Reserva {
   motorista_id: string;
   inicio: string;
   fim: string;
-  km_inicial: number;
+  km_inicial: number | null; // informado só na conclusão
   km_final: number | null;
   km_rodados: number | null;
   destino: string | null;

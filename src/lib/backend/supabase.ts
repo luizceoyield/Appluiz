@@ -109,8 +109,13 @@ export function criarBackendSupabase(url: string, anonKey: string): Backend {
     },
 
     // O banco calcula km_rodados e atualiza o hodômetro do veículo (trigger).
-    concluirReserva: (id, kmFinal) =>
-      atualizar('reservas', id, { status: 'concluida', km_final: kmFinal, concluida_em: new Date().toISOString() }),
+    concluirReserva: (id, kmInicial, kmFinal) =>
+      atualizar('reservas', id, {
+        status: 'concluida',
+        km_inicial: kmInicial,
+        km_final: kmFinal,
+        concluida_em: new Date().toISOString(),
+      }),
 
     cancelarReserva: (id) => atualizar('reservas', id, { status: 'cancelada', cancelada_em: new Date().toISOString() }),
 
