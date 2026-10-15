@@ -2,46 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Visual claro e único (sem modo escuro), com cores definidas explicitamente. */
 @layer base {
-  body { @apply bg-slate-50 font-sans text-slate-800 antialiased; }
+  html { color-scheme: light; }
+  body { @apply bg-nevoa-50 font-sans text-nevoa-900 antialiased; }
+  h1, h2, h3 { @apply font-display; text-wrap: balance; }
+  :focus-visible { @apply outline-none ring-2 ring-sicoob-turquesa ring-offset-2 ring-offset-white; }
 }
 
 @layer components {
-  .card { @apply rounded-xl border border-slate-200 bg-white shadow-sm; }
-  .rotulo { @apply mb-1 block text-sm font-medium text-slate-700; }
+  .card { @apply rounded-2xl border border-nevoa-200/80 bg-white shadow-cartao; }
+  .card-interativo { @apply card transition duration-200 hover:-translate-y-0.5 hover:border-sicoob-turquesa/50 hover:shadow-elevado; }
+  .rotulo { @apply mb-1.5 block text-[13px] font-medium text-nevoa-700; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-nevoa-500; }
   .campo {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800
-      focus:border-sicoob-turquesa focus:outline-none focus:ring-2 focus:ring-sicoob-turquesa/30
-      disabled:bg-slate-100 disabled:text-slate-500;
+    @apply w-full rounded-xl border border-nevoa-200 bg-white px-3.5 py-2.5 text-sm text-nevoa-900 transition
+      placeholder:text-nevoa-300
+      hover:border-nevoa-300
+      focus:border-sicoob-turquesa focus:outline-none focus:ring-4 focus:ring-sicoob-turquesa/15
+      disabled:bg-nevoa-50 disabled:text-nevoa-500;
   }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-primario { @apply btn bg-sicoob-escuro text-white hover:bg-sicoob-escuro-2; }
-  .btn-destaque { @apply btn bg-sicoob-turquesa text-white hover:brightness-95; }
-  .btn-secundario { @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50; }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150
+      active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  }
+  .btn-primario { @apply btn bg-sicoob-escuro text-white shadow-sm hover:bg-sicoob-escuro-2 hover:shadow-md; }
+  .btn-destaque { @apply btn bg-sicoob-turquesa text-white shadow-sm hover:bg-[#009c8d] hover:shadow-md; }
+  .btn-secundario { @apply btn border border-nevoa-200 bg-white text-nevoa-700 hover:border-nevoa-300 hover:bg-nevoa-50; }
   .btn-perigo { @apply btn bg-red-600 text-white hover:bg-red-700; }
-  .titulo-pagina { @apply text-2xl font-bold text-sicoob-escuro; }
+  .titulo-pagina { @apply font-display text-[26px] font-bold leading-tight tracking-tight text-sicoob-escuro sm:text-[30px]; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition; }
+  .chip-ativo { @apply chip border-sicoob-escuro bg-sicoob-escuro text-white; }
+  .chip-inativo { @apply chip border-nevoa-200 bg-white text-nevoa-600 hover:border-nevoa-300 hover:text-nevoa-900; }
+}
+
+@layer utilities {
+  .num { font-variant-numeric: tabular-nums; }
+  /* Faixa tracejada de "estrada" usada nas barras de progresso de viagem. */
+  .faixa-estrada {
+    background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.55) 0 12px, transparent 12px 24px);
+    background-size: 48px 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
 
 /* FullCalendar com a identidade Sicoob */
 .fc {
-  --fc-border-color: #e2e8f0;
-  --fc-button-bg-color: #003641;
-  --fc-button-border-color: #003641;
-  --fc-button-hover-bg-color: #0b4a56;
-  --fc-button-hover-border-color: #0b4a56;
-  --fc-button-active-bg-color: #00ae9d;
-  --fc-button-active-border-color: #00ae9d;
+  --fc-border-color: #e9efef;
+  --fc-button-bg-color: #ffffff;
+  --fc-button-border-color: #d7e0e1;
+  --fc-button-text-color: #33464a;
+  --fc-button-hover-bg-color: #f4f7f7;
+  --fc-button-hover-border-color: #b9c7c9;
+  --fc-button-active-bg-color: #003641;
+  --fc-button-active-border-color: #003641;
   --fc-today-bg-color: #e0f5f3;
   --fc-event-border-color: transparent;
+  --fc-page-bg-color: #ffffff;
+  --fc-neutral-bg-color: #f4f7f7;
   font-size: 0.85rem;
 }
-.fc .fc-toolbar-title { font-size: 1.15rem; font-weight: 700; color: #003641; }
+.fc .fc-toolbar-title { font-family: Sora, system-ui, sans-serif; font-size: 1.25rem; font-weight: 700; color: #003641; }
 .fc .fc-toolbar-title::first-letter { text-transform: uppercase; }
-.fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #334155; text-decoration: none; }
-.fc .fc-daygrid-event { border-radius: 6px; padding: 1px 4px; cursor: pointer; }
+.fc .fc-button { font-size: 0.8rem; font-weight: 600; border-radius: 10px; text-transform: capitalize; box-shadow: none !important; }
+.fc .fc-button-primary:not(:disabled):hover { color: #003641; }
+.fc .fc-today-button:disabled { opacity: .45; }
+.fc .fc-scrollgrid { border-radius: 14px; overflow: hidden; }
+.fc .fc-col-header-cell { background: #f4f7f7; padding: 6px 0; }
+.fc .fc-col-header-cell-cushion { color: #61777b; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
+.fc .fc-daygrid-day { cursor: pointer; transition: background-color .15s; }
+.fc .fc-daygrid-day:hover { background: #f4f7f7; }
+.fc .fc-daygrid-day.fc-day-today:hover { background: #d3efec; }
+.fc .fc-daygrid-day-number { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; font-weight: 600; color: #33464a; text-decoration: none; padding: 6px 8px; }
+.fc .fc-day-today .fc-daygrid-day-number { background: #003641; color: #fff; border-radius: 999px; margin: 4px; padding: 2px 8px; }
+.fc .fc-day-other .fc-daygrid-day-number { color: #b9c7c9; }
+.fc .fc-daygrid-event { border-radius: 7px; padding: 2px 6px; cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.fc .fc-daygrid-event:hover { transform: translateY(-1px); box-shadow: 0 4px 10px -4px rgba(0,38,46,.4); }
+.fc .fc-daygrid-more-link { font-size: 11px; font-weight: 600; color: #003641; }
 .fc .fc-event-cancelada { opacity: 0.45; text-decoration: line-through; }
-.fc .fc-button { font-size: 0.8rem; text-transform: capitalize; }
 @media (max-width: 640px) {
   .fc .fc-toolbar { flex-direction: column; gap: 0.5rem; }
-  .fc .fc-toolbar-title { font-size: 1rem; }
+  .fc .fc-toolbar-title { font-size: 1.05rem; }
+  .fc .fc-daygrid-event { padding: 1px 3px; font-size: 10px; }
+  .fc .fc-daygrid-day-frame { min-height: 64px; }
 }

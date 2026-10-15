@@ -5,6 +5,7 @@ import { useData } from '../lib/DataContext';
 import { fmtKm, fmtPeriodo } from '../lib/format';
 import { useToast } from '../lib/toast';
 import type { Reserva } from '../lib/types';
+import { Placa } from './Placa';
 
 interface Props {
   reserva: Reserva;
@@ -42,9 +43,12 @@ export function ConcluirForm({ reserva, onConcluido, onCancelar }: Props) {
 
   return (
     <form onSubmit={enviar} className="space-y-4">
-      <div className="rounded-lg bg-slate-50 p-3 text-sm">
-        <p className="font-semibold text-sicoob-escuro">{veiculo?.placa} — {veiculo?.modelo}</p>
-        <p className="text-slate-600">{motoristaPorId.get(reserva.motorista_id)?.nome} · {fmtPeriodo(reserva.inicio, reserva.fim)}</p>
+      <div className="flex items-center gap-3 rounded-2xl bg-nevoa-50 p-3 text-sm">
+        <Placa placa={veiculo?.placa} />
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-sicoob-escuro">{veiculo?.modelo} · {motoristaPorId.get(reserva.motorista_id)?.nome}</p>
+          <p className="truncate text-nevoa-600">{fmtPeriodo(reserva.inicio, reserva.fim)}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -75,9 +79,9 @@ export function ConcluirForm({ reserva, onConcluido, onCancelar }: Props) {
         </p>
       )}
 
-      <div className="rounded-xl bg-sicoob-escuro p-4 text-center text-white">
+      <div className="relative overflow-hidden rounded-2xl bg-sicoob-noite p-5 text-center text-white">
         <p className="text-xs uppercase tracking-wider text-sicoob-lima">KM rodados (final − inicial)</p>
-        <p className="text-3xl font-bold">{rodados === null ? '—' : fmtKm(rodados)}</p>
+        <p key={rodados ?? 'x'} className="num mt-1 animate-surgir font-mono text-4xl font-semibold">{rodados === null ? '—' : fmtKm(rodados)}</p>
       </div>
 
       {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{erro}</p>}

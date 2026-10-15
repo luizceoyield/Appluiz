@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Car, Loader2, Pencil, Plus, Power, RotateCcw } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { Placa } from '../components/Placa';
+import { useAgora } from '../lib/agora';
 import { useConfirmar } from '../components/Confirmar';
 import { mensagemErro, PlacaDuplicadaError } from '../lib/backend';
 import { useData } from '../lib/DataContext';
@@ -15,6 +17,7 @@ export default function Veiculos() {
   const { backend, veiculos, reservas, recarregar, somenteLeitura } = useData();
   const toast = useToast();
   const confirmar = useConfirmar();
+  const agora = useAgora();
   const [editando, setEditando] = useState<Veiculo | 'novo' | null>(null);
   const [mostrarInativos, setMostrarInativos] = useState(false);
 
@@ -45,11 +48,12 @@ export default function Veiculos() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <p className="eyebrow">Cadastro</p>
           <h1 className="titulo-pagina">Veículos</h1>
-          <p className="text-sm text-slate-500">{veiculos.filter((v) => v.ativo).length} ativos na frota</p>
+          <p className="text-sm text-nevoa-500">{veiculos.filter((v) => v.ativo).length} ativos na frota</p>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-slate-600">
+          <label className="flex items-center gap-2 text-xs text-nevoa-600">
             <input type="checkbox" checked={mostrarInativos} onChange={(e) => setMostrarInativos(e.target.checked)} /> Mostrar inativos
           </label>
           {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo veículo</button>}
@@ -57,35 +61,61 @@ export default function Veiculos() {
       </div>
 
       {lista.length === 0 ? (
-        <p className="card p-10 text-center text-sm text-slate-400">Nenhum veículo cadastrado.</p>
+        <div className="card flex flex-col items-center gap-3 p-10 text-center">
+          <span className="rounded-2xl bg-sicoob-turquesa-claro p-3 text-sicoob-escuro"><Car className="h-6 w-6" /></span>
+          <p className="text-sm text-nevoa-500">Nenhum veículo cadastrado ainda.</p>
+          {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Cadastrar o primeiro veículo</button>}
+        </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {lista.map((v) => (
-            <div key={v.id} className={`card overflow-hidden ${v.ativo ? '' : 'opacity-60'}`}>
-              <div className="h-1.5" style={{ background: v.cor }} />
-              <div className="flex items-center gap-3 p-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white" style={{ background: v.cor }}>
-                  <Car className="h-5 w-5" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {lista.map((v, i) => {
+            const emUsoAgora = reservas.some(
+              (r) => r.veiculo_id === v.id && r.status === 'agendada' && new Date(r.inicio) <= agora && new Date(r.fim) > agora,
+            );
+            return (
+              <div key={v.id} className={`card-interativo group animate-subir overflow-hidden ${v.ativo ? '' : 'opacity-60'}`} style={{ animationDelay: `${i * 40}ms` }}>
+                <div className="relative flex h-24 items-center justify-center overflow-hidden" style={{ background: v.cor }}>
+                  <svg className="absolute -right-4 -top-6 h-28 w-28 opacity-15" viewBox="0 0 100 100" aria-hidden="true">
+                    <path d="M0 0 L50 86 L100 0 Z" fill="#fff" />
+                  </svg>
+                  <div className="transition duration-300 group-hover:scale-105">
+                    <Placa placa={v.placa} tamanho="lg" />
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold tracking-wide text-sicoob-escuro">{v.placa}</p>
-                  <p className="truncate text-sm text-slate-600">{[v.marca, v.modelo, v.ano].filter(Boolean).join(' · ')}</p>
-                  <p className="text-xs text-slate-500">Hodômetro: {fmtKm(v.km_atual)}{!v.ativo && ' · Inativo'}</p>
+                <div className="flex items-start gap-3 p-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-display font-semibold text-nevoa-900">{[v.marca, v.modelo].filter(Boolean).join(' ')}</p>
+                    <p className="text-xs text-nevoa-500">{v.ano ?? 'Ano não informado'}</p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <span className="num rounded-md bg-sicoob-noite px-2 py-1 font-mono text-xs font-semibold text-white">{fmtKm(v.km_atual)}</span>
+                      {!v.ativo ? (
+                        <span className="text-xs font-semibold text-nevoa-500">Inativo</span>
+                      ) : emUsoAgora ? (
+                        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#00766b]"><span className="h-1.5 w-1.5 animate-pulsar rounded-full bg-sicoob-turquesa" /> Em uso</span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#4d7a0c]"><span className="h-1.5 w-1.5 rounded-full bg-sicoob-verde" /> Livre</span>
+                      )}
+                    </div>
+                  </div>
+                  {!somenteLeitura && (
+                    <div className="flex gap-1">
+                      <button className="rounded-lg p-2 text-nevoa-500 transition hover:bg-nevoa-100 hover:text-nevoa-900" onClick={() => setEditando(v)} aria-label="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        className="rounded-lg p-2 text-nevoa-500 transition hover:bg-nevoa-100 hover:text-nevoa-900"
+                        onClick={() => alternarAtivo(v)}
+                        aria-label={v.ativo ? 'Desativar' : 'Reativar'}
+                        title={v.ativo ? 'Desativar' : 'Reativar'}
+                      >
+                        {v.ativo ? <Power className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {!somenteLeitura && (<>
-                <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" onClick={() => setEditando(v)} aria-label="Editar"><Pencil className="h-4 w-4" /></button>
-                <button
-                  className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-                  onClick={() => alternarAtivo(v)}
-                  aria-label={v.ativo ? 'Desativar' : 'Reativar'}
-                  title={v.ativo ? 'Desativar' : 'Reativar'}
-                >
-                  {v.ativo ? <Power className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
-                </button>
-                </>)}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -163,7 +193,7 @@ function FormVeiculo({ veiculo, corSugerida, onSalvo, onCancelar }: { veiculo?: 
         <div className="col-span-2">
           <label className="rotulo" htmlFor="km">Hodômetro atual (KM)</label>
           <input id="km" type="number" inputMode="decimal" step="0.1" min={0} className="campo" value={km} onChange={(e) => setKm(e.target.value)} />
-          <p className="mt-1 text-xs text-slate-500">Atualizado automaticamente ao concluir cada reserva.</p>
+          <p className="mt-1 text-xs text-nevoa-500">Atualizado automaticamente ao concluir cada reserva.</p>
         </div>
       </div>
       <div>

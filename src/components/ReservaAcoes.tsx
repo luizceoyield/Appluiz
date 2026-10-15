@@ -9,6 +9,7 @@ import { ConcluirForm } from './ConcluirForm';
 import { useConfirmar } from './Confirmar';
 import { Modal } from './Modal';
 import { ReservaForm, type PrefillReserva } from './ReservaForm';
+import { Placa } from './Placa';
 import { StatusBadge } from './StatusBadge';
 
 type Estado =
@@ -95,15 +96,15 @@ export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <span className="h-10 w-2 rounded-full" style={{ background: veiculoPorId.get(r.veiculo_id)?.cor }} />
+                <Placa placa={veiculoPorId.get(r.veiculo_id)?.placa} tamanho="lg" />
                 <div>
-                  <p className="text-lg font-bold text-sicoob-escuro">{veiculoPorId.get(r.veiculo_id)?.placa}</p>
-                  <p className="text-sm text-slate-600">{veiculoPorId.get(r.veiculo_id)?.modelo}</p>
+                  <p className="font-display font-semibold text-sicoob-escuro">{veiculoPorId.get(r.veiculo_id)?.modelo}</p>
+                  <p className="text-sm text-nevoa-500">{veiculoPorId.get(r.veiculo_id)?.marca}</p>
                 </div>
               </div>
               <StatusBadge reserva={r} />
             </div>
-            <dl className="grid grid-cols-2 gap-3 text-sm">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl bg-nevoa-50 p-4 text-sm">
               <Item rotulo="Motorista" valor={`${motoristaPorId.get(r.motorista_id)?.nome ?? '—'}`} />
               <Item rotulo="Cargo" valor={motoristaPorId.get(r.motorista_id)?.cargo ?? '—'} />
               <Item rotulo="Período" valor={fmtPeriodo(r.inicio, r.fim)} span />
@@ -130,8 +131,8 @@ export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
 function Item({ rotulo, valor, span }: { rotulo: string; valor: string; span?: boolean }) {
   return (
     <div className={span ? 'col-span-2' : ''}>
-      <dt className="text-xs uppercase tracking-wide text-slate-500">{rotulo}</dt>
-      <dd className="font-medium text-slate-800">{valor}</dd>
+      <dt className="eyebrow">{rotulo}</dt>
+      <dd className="font-medium text-nevoa-800">{valor}</dd>
     </div>
   );
 }

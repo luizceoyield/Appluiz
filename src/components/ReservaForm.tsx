@@ -153,7 +153,7 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
           <label className="rotulo" htmlFor="kmIni">KM inicial *</label>
           <input id="kmIni" type="number" inputMode="decimal" min={0} step="0.1" className="campo" required value={kmInicial} onChange={(e) => setKmInicial(e.target.value)} />
           {veiculoPorId.get(veiculoId) && (
-            <p className="mt-1 text-xs text-slate-500">Hodômetro atual: {fmtKm(veiculoPorId.get(veiculoId)!.km_atual)}</p>
+            <p className="mt-1 text-xs text-nevoa-500">Hodômetro atual: {fmtKm(veiculoPorId.get(veiculoId)!.km_atual)}</p>
           )}
         </div>
         <div>

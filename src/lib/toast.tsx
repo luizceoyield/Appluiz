@@ -16,13 +16,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={mostrar}>
       {children}
-      <div className="fixed bottom-20 right-4 z-[60] flex flex-col gap-2 md:bottom-4">
+      <div className="fixed bottom-40 right-4 z-[60] flex flex-col gap-2 md:bottom-6 md:right-6">
         {toasts.map((t) => (
           <div
             key={t.id}
             role="status"
-            className={`flex max-w-sm items-start gap-2 rounded-lg px-4 py-3 text-sm text-white shadow-lg ${
-              t.tipo === 'sucesso' ? 'bg-sicoob-escuro' : 'bg-red-600'
+            className={`flex max-w-sm animate-subir items-start gap-2 rounded-2xl px-4 py-3 text-sm text-white shadow-elevado ${
+              t.tipo === 'sucesso' ? 'bg-sicoob-noite' : 'bg-red-600'
             }`}
           >
             {t.tipo === 'sucesso' ? <CheckCircle2 className="h-5 w-5 shrink-0 text-sicoob-lima" /> : <XCircle className="h-5 w-5 shrink-0" />}

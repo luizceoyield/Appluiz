@@ -28,7 +28,7 @@ export function ConfirmarProvider({ children }: { children: ReactNode }) {
     <Ctx.Provider value={pedir}>
       {children}
       <Modal aberto={pedido !== null} titulo={pedido?.titulo ?? ''} onFechar={() => responder(false)} largura="max-w-md">
-        <p className="whitespace-pre-line text-sm text-slate-700">{pedido?.mensagem}</p>
+        <p className="whitespace-pre-line text-sm text-nevoa-700">{pedido?.mensagem}</p>
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button className="btn-secundario" onClick={() => responder(false)}>Voltar</button>
           <button className={pedido?.perigo ? 'btn-perigo' : 'btn-primario'} onClick={() => responder(true)} autoFocus>
