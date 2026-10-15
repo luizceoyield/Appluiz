@@ -68,12 +68,12 @@ export default function Veiculos() {
         </div>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-4">
-          {lista.map((v, i) => {
+          {lista.map((v) => {
             const emUsoAgora = reservas.some(
               (r) => r.veiculo_id === v.id && r.status === 'agendada' && new Date(r.inicio) <= agora && new Date(r.fim) > agora,
             );
             return (
-              <div key={v.id} className={`card-interativo group animate-subir overflow-hidden ${v.ativo ? '' : 'opacity-60'}`} style={{ animationDelay: `${i * 40}ms` }}>
+              <div key={v.id} className={`card-interativo overflow-hidden ${v.ativo ? '' : 'opacity-60'}`}>
                 <div className="relative flex h-24 items-center justify-center overflow-hidden" style={{ background: v.cor }}>
                   <svg className="absolute -right-4 -top-6 h-28 w-28 opacity-15" viewBox="0 0 100 100" aria-hidden="true">
                     <path d="M0 0 L50 86 L100 0 Z" fill="#fff" />
@@ -91,7 +91,7 @@ export default function Veiculos() {
                       {!v.ativo ? (
                         <span className="text-xs font-semibold text-nevoa-500">Inativo</span>
                       ) : emUsoAgora ? (
-                        <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-[#00766b]"><span className="h-1.5 w-1.5 animate-pulsar rounded-full bg-sicoob-turquesa" /> Em uso</span>
+                        <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-[#00766b]"><span className="h-1.5 w-1.5 rounded-full bg-sicoob-turquesa" /> Em uso</span>
                       ) : (
                         <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-[#4d7a0c]"><span className="h-1.5 w-1.5 rounded-full bg-sicoob-verde" /> Livre</span>
                       )}

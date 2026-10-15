@@ -73,10 +73,10 @@ export default function Motoristas() {
         </div>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-4">
-          {lista.map((m, i) => {
+          {lista.map((m) => {
             const st = estatisticas.get(m.id) ?? { viagens: 0, km: 0 };
             return (
-              <div key={m.id} className={`card-interativo animate-subir p-4 ${m.ativo ? '' : 'opacity-60'}`} style={{ animationDelay: `${i * 40}ms` }}>
+              <div key={m.id} className={`card-interativo p-4 ${m.ativo ? '' : 'opacity-60'}`}>
                 <div className="flex items-center gap-3">
                   <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sicoob-escuro font-display text-sm font-bold text-white">
                     {m.nome.split(' ').filter(Boolean).map((p) => p[0]).slice(0, 2).join('').toUpperCase()}

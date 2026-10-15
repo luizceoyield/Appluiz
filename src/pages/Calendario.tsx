@@ -136,7 +136,7 @@ export default function Calendario() {
         {diaAberto && (
           <div className="space-y-4">
             {doDia.length === 0 ? (
-              <div className="flex animate-surgir items-center gap-3 rounded-2xl bg-sicoob-turquesa-claro p-4 text-sicoob-escuro">
+              <div className="flex items-center gap-3 rounded-2xl bg-sicoob-turquesa-claro p-4 text-sicoob-escuro">
                 <CalendarCheck className="h-6 w-6 shrink-0" />
                 <div>
                   <p className="font-semibold">Nenhuma reserva neste dia</p>

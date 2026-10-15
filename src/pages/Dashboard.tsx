@@ -9,7 +9,6 @@ import { aguardandoKm, emUso, StatusBadge } from '../components/StatusBadge';
 import { chaveMes, useAgora } from '../lib/agora';
 import { useData } from '../lib/DataContext';
 import { fmtHora, fmtKm, fmtPeriodo, isoDiaLocal } from '../lib/format';
-import { useContagem } from '../lib/useContagem';
 import type { Reserva, Veiculo } from '../lib/types';
 
 const nomeMes = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
@@ -125,8 +124,6 @@ export default function Dashboard() {
   );
 
   const livres = frota.filter((f) => f.estado.tipo === 'livre').length;
-  const saidasAnim = Math.round(useContagem(dados.saidas));
-  const pendAnim = Math.round(useContagem(pendentes.length));
 
   // Agrupa as próximas saídas por dia (Hoje, Amanhã, ...).
   const grupos = proximas.reduce<{ dia: string; itens: Reserva[] }[]>((acc, r) => {
@@ -147,7 +144,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           {!seguindoAtual && (
             <button
-              className="chip-inativo animate-surgir"
+              className="chip-inativo"
               onClick={() => {
                 setSeguindoAtual(true);
                 setMes(inicioDoMes(new Date()));
@@ -160,7 +157,7 @@ export default function Dashboard() {
             <button className="rounded-lg p-1.5 text-nevoa-600 transition hover:bg-nevoa-100" onClick={() => mudarMes(-1)} aria-label="Mês anterior">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span key={mes.getTime()} className="min-w-36 animate-surgir text-center font-display text-sm font-semibold text-sicoob-escuro">
+            <span className="min-w-36 text-center font-display text-sm font-semibold text-sicoob-escuro">
               {maiuscula(nomeMes.format(mes))}
             </span>
             <button className="rounded-lg p-1.5 text-nevoa-600 transition hover:bg-nevoa-100" onClick={() => mudarMes(1)} aria-label="Próximo mês">
@@ -227,8 +224,8 @@ export default function Dashboard() {
             <p className="py-10 text-center text-sm text-nevoa-400">{carregando ? 'Carregando…' : 'Nenhum veículo ativo cadastrado.'}</p>
           ) : (
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-              {frota.map(({ veiculo, estado }, i) => (
-                <li key={veiculo.id} className="min-w-0 animate-subir" style={{ animationDelay: `${i * 50}ms` }}>
+              {frota.map(({ veiculo, estado }) => (
+                <li key={veiculo.id} className="min-w-0">
                   <button
                     onClick={() =>
                       estado.tipo === 'livre'
@@ -264,7 +261,7 @@ export default function Dashboard() {
                       <div className="mt-3">
                         <div className="relative h-2 overflow-hidden rounded-full bg-nevoa-200/70">
                           <div
-                            className="faixa-estrada absolute inset-y-0 left-0 animate-estrada rounded-full bg-sicoob-turquesa transition-[width] duration-700"
+                            className="faixa-estrada absolute inset-y-0 left-0 rounded-full bg-sicoob-turquesa"
                             style={{ width: `${Math.min(100, Math.max(4, estado.progresso * 100))}%` }}
                           />
                         </div>
@@ -296,14 +293,14 @@ export default function Dashboard() {
           </section>
           <section className="card p-5">
             <p className="eyebrow">Saídas no mês</p>
-            <p className="num mt-2 font-display text-4xl font-bold text-sicoob-escuro">{saidasAnim}</p>
+            <p className="num mt-2 font-display text-4xl font-bold text-sicoob-escuro">{dados.saidas}</p>
             <p className="text-xs text-nevoa-500">
               {dados.concluidas} concluída{dados.concluidas === 1 ? '' : 's'}
             </p>
           </section>
           <section className={`card p-5 ${pendentes.length ? 'border-amber-300 bg-amber-50/60' : ''}`}>
             <p className="eyebrow">Aguardando KM final</p>
-            <p className={`num mt-2 font-display text-4xl font-bold ${pendentes.length ? 'text-amber-600' : 'text-sicoob-escuro'}`}>{pendAnim}</p>
+            <p className={`num mt-2 font-display text-4xl font-bold ${pendentes.length ? 'text-amber-600' : 'text-sicoob-escuro'}`}>{pendentes.length}</p>
             <p className="text-xs text-nevoa-500">{pendentes.length ? 'reservas para concluir' : 'tudo em dia'}</p>
           </section>
         </div>
@@ -329,7 +326,7 @@ export default function Dashboard() {
                 <XAxis dataKey="hora" tick={{ fontSize: 11, fill: '#61777b', fontFamily: 'IBM Plex Mono' }} tickLine={false} axisLine={{ stroke: '#d7e0e1' }} interval="preserveStartEnd" />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#61777b' }} tickLine={false} axisLine={false} />
                 <Tooltip cursor={{ fill: '#f4f7f7', radius: 6 }} content={<DicaGrafico unidade="saídas" />} />
-                <Bar dataKey="saidas" radius={[6, 6, 2, 2]} maxBarSize={28} animationDuration={900}>
+                <Bar dataKey="saidas" radius={[6, 6, 2, 2]} maxBarSize={28} isAnimationActive={false}>
                   {dados.porHora.map((p) => (
                     <Cell key={p.hora} fill={p.saidas > 0 && p.saidas === dados.pico ? '#00AE9D' : '#003641'} />
                   ))}
@@ -359,7 +356,7 @@ export default function Dashboard() {
                     tick={{ fontSize: 12, fill: '#003641', fontWeight: 600, fontFamily: 'IBM Plex Mono' }}
                   />
                   <Tooltip cursor={{ fill: '#f4f7f7', radius: 6 }} content={<DicaGrafico unidade="km" />} />
-                  <Bar dataKey="km" radius={[2, 6, 6, 2]} maxBarSize={34} animationDuration={900}>
+                  <Bar dataKey="km" radius={[2, 6, 6, 2]} maxBarSize={34} isAnimationActive={false}>
                     {dados.kmPorVeiculo.map((v) => (
                       <Cell key={v.placa} fill={v.cor} />
                     ))}

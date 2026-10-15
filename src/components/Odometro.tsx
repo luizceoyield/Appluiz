@@ -1,8 +1,6 @@
-import { useContagem } from '../lib/useContagem';
-
 /** KM em estilo hodômetro: dígitos em casas escuras, última casa em destaque. */
 export function Odometro({ km, casas = 6 }: { km: number; casas?: number }) {
-  const v = Math.max(0, Math.round(useContagem(km)));
+  const v = Math.max(0, Math.round(km));
   const digitos = String(v).padStart(casas, '0').split('');
   return (
     <span className="inline-flex items-end gap-1.5" aria-label={`${v} quilômetros`}>

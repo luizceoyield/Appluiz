@@ -27,7 +27,7 @@ export function ConfirmarProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={pedir}>
       {children}
-      <Modal aberto={pedido !== null} titulo={pedido?.titulo ?? ''} onFechar={() => responder(false)} largura="max-w-md">
+      <Modal aberto={pedido !== null} titulo={pedido?.titulo ?? ''} onFechar={() => responder(false)} largura="max-w-md" compacta>
         <p className="whitespace-pre-line text-sm text-nevoa-700">{pedido?.mensagem}</p>
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button className="btn-secundario" onClick={() => responder(false)}>Voltar</button>

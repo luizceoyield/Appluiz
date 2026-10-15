@@ -9,12 +9,14 @@ const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
 
 const pegar = (re) => [...head.matchAll(re)].map((m) => m[0]);
 const titulo = pegar(/<title>[\s\S]*?<\/title>/g);
+const viewport = pegar(/<meta name="viewport"[^>]*>/g);
 const fontes = pegar(/<link[^>]+fonts\.googleapis\.com[^>]*>/g);
 const estilos = pegar(/<style[\s\S]*?<\/style>/g);
 const scripts = pegar(/<script[\s\S]*?<\/script>/g);
 
 const pagina = [
   ...titulo,
+  ...viewport,
   ...fontes,
   ...estilos,
   body.trim(),

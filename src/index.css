@@ -4,7 +4,17 @@
 
 /* Visual claro e único (sem modo escuro), com cores definidas explicitamente. */
 @layer base {
-  html { color-scheme: light; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  /* Layout fixo: sem zoom por toque duplo, sem "elástico" ao rolar e sem deslizar para os lados. */
+  html {
+    color-scheme: light;
+    scrollbar-gutter: stable;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+  body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+  #root { overflow-x: clip; }
   input, select, textarea { font-size: 16px; }
   body { @apply bg-nevoa-50 font-sans text-nevoa-900 antialiased; }
   h1, h2, h3 { @apply font-display; text-wrap: balance; }

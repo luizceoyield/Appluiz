@@ -17,9 +17,9 @@ export function StatusBadge({ reserva }: { reserva: Reserva }) {
       : reserva.status === 'cancelada'
         ? ['Cancelada', 'bg-nevoa-100 text-nevoa-500', 'bg-nevoa-300']
         : aguardandoKm(reserva, agora)
-          ? ['Aguardando KM final', 'bg-amber-100 text-amber-800', 'bg-amber-500 animate-pulsar']
+          ? ['Aguardando KM final', 'bg-amber-100 text-amber-800', 'bg-amber-500']
           : emUso(reserva, agora)
-            ? ['Em uso', 'bg-sicoob-turquesa/12 text-[#00766b]', 'bg-sicoob-turquesa animate-pulsar']
+            ? ['Em uso', 'bg-sicoob-turquesa/12 text-[#00766b]', 'bg-sicoob-turquesa']
             : ['Agendada', 'bg-sicoob-escuro/[.07] text-sicoob-escuro', 'bg-sicoob-escuro'];
   return (
     <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${classe}`}>

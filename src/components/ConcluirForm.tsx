@@ -108,7 +108,7 @@ export function ConcluirForm({ reserva, onConcluido, onCancelar }: Props) {
 
       <div className="relative overflow-hidden rounded-2xl bg-sicoob-noite p-5 text-center text-white">
         <p className="text-xs uppercase tracking-wider text-sicoob-lima">KM rodados (final − inicial)</p>
-        <p key={rodados ?? 'x'} className="num mt-1 animate-surgir font-mono text-4xl font-semibold">
+        <p className="num mt-1 font-mono text-4xl font-semibold">
           {fmtKm(rodados)}
         </p>
       </div>

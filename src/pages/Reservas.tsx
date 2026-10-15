@@ -89,8 +89,8 @@ export default function Reservas() {
         <>
           {/* Celular e tablet: cartões */}
           <ul className="grid gap-3 sm:grid-cols-2 lg:hidden">
-            {lista.map((r, i) => (
-              <li key={r.id} className="card-interativo animate-subir cursor-pointer p-4" style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }} onClick={() => detalhar(r)}>
+            {lista.map((r) => (
+              <li key={r.id} className="card-interativo cursor-pointer p-4" onClick={() => detalhar(r)}>
                 <div className="flex items-start justify-between gap-2">
                   <Placa placa={veiculoPorId.get(r.veiculo_id)?.placa} />
                   <StatusBadge reserva={r} />

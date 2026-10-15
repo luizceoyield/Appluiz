@@ -49,7 +49,6 @@ export function Layout() {
   const statusConexao = (
     <span className={`inline-flex items-center gap-2 text-xs font-medium ${online ? 'text-sicoob-verde' : 'text-amber-500'}`}>
       <span className="relative flex h-2 w-2">
-        {online && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sicoob-verde opacity-60" />}
         <span className={`relative inline-flex h-2 w-2 rounded-full ${online ? 'bg-sicoob-verde' : 'bg-amber-500'}`} />
       </span>
       {online ? 'Ao vivo' : 'Reconectando…'}
@@ -150,7 +149,7 @@ export function Layout() {
         )}
 
         <main className="flex-1 px-4 pb-32 pt-5 md:px-8 md:pb-12 md:pt-5">
-          <div key={local.pathname} className="animate-aparecer">
+          <div key={local.pathname}>
             <Outlet />
           </div>
         </main>

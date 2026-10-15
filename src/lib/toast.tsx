@@ -21,7 +21,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className={`flex max-w-sm animate-subir items-start gap-2 rounded-2xl px-4 py-3 text-sm text-white shadow-elevado ${
+            className={`flex max-w-sm animate-aparecer items-start gap-2 rounded-2xl px-4 py-3 text-sm text-white shadow-elevado ${
               t.tipo === 'sucesso' ? 'bg-sicoob-noite' : 'bg-red-600'
             }`}
           >
