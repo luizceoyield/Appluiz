@@ -1,51 +1,71 @@
 import { useMemo, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import type { EventContentArg } from '@fullcalendar/core';
+import { CalendarCheck, CalendarPlus, ChevronRight } from 'lucide-react';
+import { Modal } from '../components/Modal';
 import { useReservaAcoes } from '../components/ReservaAcoes';
+import { StatusBadge } from '../components/StatusBadge';
 import { useData } from '../lib/DataContext';
+import { fmtPeriodo } from '../lib/format';
+
+const dataLonga = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function Calendario() {
-  const { reservas, veiculos, veiculoPorId, motoristaPorId } = useData();
+  const { reservas, veiculos, veiculoPorId, motoristaPorId, somenteLeitura } = useData();
   const { novaReserva, detalhar } = useReservaAcoes();
   const [filtro, setFiltro] = useState<string>('');
   const [mostrarCanceladas, setMostrarCanceladas] = useState(false);
-  const celular = typeof window !== 'undefined' && window.innerWidth < 640;
+  const [diaAberto, setDiaAberto] = useState<Date | null>(null);
+
+  const visiveis = useMemo(
+    () => reservas.filter((r) => (mostrarCanceladas || r.status !== 'cancelada') && (!filtro || r.veiculo_id === filtro)),
+    [reservas, filtro, mostrarCanceladas],
+  );
 
   const eventos = useMemo(
     () =>
-      reservas
-        .filter((r) => (mostrarCanceladas || r.status !== 'cancelada') && (!filtro || r.veiculo_id === filtro))
-        .map((r) => {
-          const v = veiculoPorId.get(r.veiculo_id);
-          const m = motoristaPorId.get(r.motorista_id);
-          return {
-            id: r.id,
-            title: `${v?.placa ?? 'Veículo'} · ${m?.nome ?? ''}`,
-            start: r.inicio,
-            end: r.fim,
-            backgroundColor: v?.cor ?? '#003641',
-            borderColor: v?.cor ?? '#003641',
-            textColor: '#ffffff',
-            display: 'block',
-            classNames: r.status === 'cancelada' ? ['fc-event-cancelada'] : [],
-            extendedProps: { placa: v?.placa, modelo: v?.modelo, motorista: m?.nome, status: r.status },
-          };
-        }),
-    [reservas, veiculoPorId, motoristaPorId, filtro, mostrarCanceladas],
+      visiveis.map((r) => {
+        const v = veiculoPorId.get(r.veiculo_id);
+        const m = motoristaPorId.get(r.motorista_id);
+        return {
+          id: r.id,
+          title: `${v?.placa ?? 'Veículo'} · ${m?.nome ?? ''}`,
+          start: r.inicio,
+          end: r.fim,
+          backgroundColor: v?.cor ?? '#003641',
+          borderColor: v?.cor ?? '#003641',
+          textColor: '#ffffff',
+          display: 'block',
+          classNames: r.status === 'cancelada' ? ['fc-event-cancelada'] : [],
+          extendedProps: { placa: v?.placa, motorista: m?.nome },
+        };
+      }),
+    [visiveis, veiculoPorId, motoristaPorId],
   );
 
+  // Reservas que ocupam qualquer parte do dia clicado.
+  const doDia = useMemo(() => {
+    if (!diaAberto) return [];
+    const ini = new Date(diaAberto.getFullYear(), diaAberto.getMonth(), diaAberto.getDate());
+    const fim = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() + 1);
+    return visiveis
+      .filter((r) => new Date(r.inicio) < fim && new Date(r.fim) > ini)
+      .sort((a, b) => a.inicio.localeCompare(b.inicio));
+  }, [diaAberto, visiveis]);
+
   const veiculosAtivos = veiculos.filter((v) => v.ativo);
+  const ocupados = new Set(doDia.filter((r) => r.status !== 'cancelada').map((r) => r.veiculo_id));
+  const livres = veiculosAtivos.filter((v) => !ocupados.has(v.id) && (!filtro || v.id === filtro));
 
   return (
     <div className="space-y-4">
       <div>
         <h1 className="titulo-pagina">Calendário de reservas</h1>
-        <p className="text-sm text-slate-500">Clique em um dia para reservar · clique em uma reserva para ver detalhes ou concluir</p>
+        <p className="text-sm text-slate-500">Clique em um dia para ver as reservas daquele dia</p>
       </div>
 
       <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -70,28 +90,28 @@ export default function Calendario() {
           ))}
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-600">
-          <input type="checkbox" checked={mostrarCanceladas} onChange={(e) => setMostrarCanceladas(e.target.checked)} /> Mostrar canceladas
+          <input id="mostrarCanceladas" type="checkbox" checked={mostrarCanceladas} onChange={(e) => setMostrarCanceladas(e.target.checked)} /> Mostrar canceladas
         </label>
       </div>
 
       <div className="card p-2 sm:p-4">
         <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+          plugins={[dayGridPlugin, interactionPlugin]}
           locale={ptBrLocale}
-          initialView={celular ? 'listWeek' : 'dayGridMonth'}
-          headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' }}
-          buttonText={{ today: 'Hoje', month: 'Mês', week: 'Semana', list: 'Lista' }}
+          initialView="dayGridMonth"
+          headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
+          buttonText={{ today: 'Hoje' }}
           height="auto"
           events={eventos}
-          dayMaxEvents={4}
-          nowIndicator
-          slotMinTime="06:00:00"
-          slotMaxTime="22:00:00"
-          eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
-          dateClick={(info) => {
-            const data = info.date;
-            novaReserva({ data, veiculoId: filtro || undefined });
+          dayMaxEvents={3}
+          moreLinkClick={(info) => {
+            setDiaAberto(info.date);
+            // Qualquer valor verdadeiro que não seja texto impede o popover padrão.
+            return true as never;
           }}
+          moreLinkContent={(arg) => `+${arg.num} mais`}
+          eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
+          dateClick={(info) => setDiaAberto(info.date)}
           eventClick={(info) => {
             const r = reservas.find((x) => x.id === info.event.id);
             if (r) detalhar(r);
@@ -99,22 +119,88 @@ export default function Calendario() {
           eventContent={renderEvento}
         />
       </div>
+
+      <Modal aberto={diaAberto !== null} titulo={diaAberto ? maiuscula(dataLonga.format(diaAberto)) : ''} onFechar={() => setDiaAberto(null)}>
+        {diaAberto && (
+          <div className="space-y-4">
+            {doDia.length === 0 ? (
+              <div className="flex items-center gap-3 rounded-xl bg-sicoob-turquesa-claro p-4 text-teal-900">
+                <CalendarCheck className="h-6 w-6 shrink-0" />
+                <div>
+                  <p className="font-semibold">Nenhuma reserva neste dia</p>
+                  <p className="text-sm">{filtro ? 'Este veículo está livre o dia todo.' : 'Todos os veículos estão livres o dia todo.'}</p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-sicoob-escuro">
+                  {doDia.length} {doDia.length === 1 ? 'reserva' : 'reservas'} neste dia
+                </p>
+                <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                  {doDia.map((r) => {
+                    const v = veiculoPorId.get(r.veiculo_id);
+                    return (
+                      <li key={r.id}>
+                        <button
+                          onClick={() => {
+                            setDiaAberto(null);
+                            detalhar(r);
+                          }}
+                          className="flex w-full items-center gap-3 px-3 py-3 text-left hover:bg-slate-50"
+                        >
+                          <span className="h-9 w-1.5 shrink-0 rounded-full" style={{ background: v?.cor }} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-slate-800">
+                              {v?.placa} · {motoristaPorId.get(r.motorista_id)?.nome}
+                            </p>
+                            <p className="truncate text-xs text-slate-500">
+                              {fmtPeriodo(r.inicio, r.fim)}
+                              {r.destino ? ` · ${r.destino}` : ''}
+                            </p>
+                          </div>
+                          <StatusBadge reserva={r} />
+                          <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {doDia.length > 0 && veiculosAtivos.length > 0 && (
+              <p className="text-sm text-slate-600">
+                <span className="font-medium">Livres o dia todo:</span>{' '}
+                {livres.length ? livres.map((v) => v.placa).join(', ') : 'nenhum veículo'}
+              </p>
+            )}
+
+            {!somenteLeitura && (
+              <div className="flex justify-end">
+                <button
+                  className="btn-primario"
+                  onClick={() => {
+                    const dia = diaAberto;
+                    setDiaAberto(null);
+                    novaReserva({ data: dia, veiculoId: filtro || undefined });
+                  }}
+                >
+                  <CalendarPlus className="h-4 w-4" /> Reservar neste dia
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
 
 function renderEvento(arg: EventContentArg) {
   const { placa, motorista } = arg.event.extendedProps as { placa?: string; motorista?: string };
-  if (arg.view.type === 'listWeek') {
-    return (
-      <span>
-        <strong>{placa}</strong> · {motorista}
-      </span>
-    );
-  }
   return (
     <div className="overflow-hidden leading-tight">
-      <span className="mr-1 opacity-90">{arg.timeText}</span>
+      <span className="mr-1 hidden opacity-90 sm:inline">{arg.timeText}</span>
       <strong>{placa}</strong>
       <span className="hidden opacity-90 lg:inline"> · {motorista}</span>
     </div>
