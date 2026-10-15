@@ -16,7 +16,7 @@ const filtros = {
 type Filtro = keyof typeof filtros;
 
 export default function Reservas() {
-  const { reservas, veiculos, veiculoPorId, motoristaPorId } = useData();
+  const { reservas, veiculos, veiculoPorId, motoristaPorId, somenteLeitura } = useData();
   const { novaReserva, detalhar, concluir, editar, cancelar } = useReservaAcoes();
   const [filtro, setFiltro] = useState<Filtro>('todas');
   const [veiculoId, setVeiculoId] = useState('');
@@ -40,7 +40,7 @@ export default function Reservas() {
   }, [reservas, filtro, veiculoId, busca, veiculoPorId, motoristaPorId]);
 
   const acoes = (r: Reserva) =>
-    r.status === 'agendada' && (
+    r.status === 'agendada' && !somenteLeitura && (
       <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
         <button className="btn-destaque px-2.5 py-1.5 text-xs" onClick={() => concluir(r)}><Flag className="h-3.5 w-3.5" /> Concluir</button>
         <button className="btn-secundario px-2.5 py-1.5 text-xs" onClick={() => editar(r)} aria-label="Editar"><Pencil className="h-3.5 w-3.5" /></button>
@@ -55,7 +55,7 @@ export default function Reservas() {
           <h1 className="titulo-pagina">Saídas e reservas</h1>
           <p className="text-sm text-slate-500">Registro de saída, conclusão com KM final e histórico completo</p>
         </div>
-        <button className="btn-primario self-start" onClick={() => novaReserva()}><Plus className="h-4 w-4" /> Registrar saída</button>
+        {!somenteLeitura && <button className="btn-primario self-start" onClick={() => novaReserva()}><Plus className="h-4 w-4" /> Registrar saída</button>}
       </div>
 
       <div className="card space-y-3 p-4">
@@ -100,7 +100,7 @@ export default function Reservas() {
                   KM {fmtKm(r.km_inicial)} → {r.km_final === null ? '—' : fmtKm(r.km_final)}
                   {r.km_rodados !== null && <strong className="text-sicoob-escuro"> · {fmtKm(r.km_rodados)} rodados</strong>}
                 </p>
-                {r.status === 'agendada' && <div className="mt-3">{acoes(r)}</div>}
+                {r.status === 'agendada' && !somenteLeitura && <div className="mt-3">{acoes(r)}</div>}
               </li>
             ))}
           </ul>

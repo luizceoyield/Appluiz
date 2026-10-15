@@ -1,24 +1,37 @@
 import { useState, type FormEvent } from 'react';
 import { Loader2, Pencil, Plus, Power, RotateCcw } from 'lucide-react';
 import { Modal } from '../components/Modal';
-import { mensagemErro } from '../lib/api';
+import { useConfirmar } from '../components/Confirmar';
+import { mensagemErro } from '../lib/backend';
 import { useData } from '../lib/DataContext';
-import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/toast';
 import type { Motorista } from '../lib/types';
 
 export default function Motoristas() {
-  const { motoristas, recarregar } = useData();
+  const { backend, motoristas, recarregar, somenteLeitura } = useData();
   const toast = useToast();
+  const confirmar = useConfirmar();
   const [editando, setEditando] = useState<Motorista | 'novo' | null>(null);
   const [mostrarInativos, setMostrarInativos] = useState(false);
 
   const lista = motoristas.filter((m) => mostrarInativos || m.ativo);
 
   async function alternarAtivo(m: Motorista) {
-    if (m.ativo && !window.confirm(`Desativar ${m.nome}? O histórico de reservas é mantido e é possível reativar depois.`)) return;
-    const { error } = await supabase.from('motoristas').update({ ativo: !m.ativo }).eq('id', m.id);
-    if (error) return toast('erro', mensagemErro(error));
+    if (
+      m.ativo &&
+      !(await confirmar({
+        titulo: 'Desativar motorista',
+        mensagem: `Desativar ${m.nome}? O histórico de reservas é mantido e é possível reativar depois.`,
+        confirmar: 'Desativar',
+        perigo: true,
+      }))
+    )
+      return;
+    try {
+      await backend.definirAtivo('motoristas', m.id, !m.ativo);
+    } catch (e) {
+      return toast('erro', mensagemErro(e));
+    }
     toast('sucesso', m.ativo ? 'Motorista desativado.' : 'Motorista reativado.');
     recarregar();
   }
@@ -34,7 +47,7 @@ export default function Motoristas() {
           <label className="flex items-center gap-2 text-xs text-slate-600">
             <input type="checkbox" checked={mostrarInativos} onChange={(e) => setMostrarInativos(e.target.checked)} /> Mostrar inativos
           </label>
-          <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo motorista</button>
+          {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo motorista</button>}
         </div>
       </div>
 
@@ -52,6 +65,7 @@ export default function Motoristas() {
                 <p className="truncate text-sm text-slate-500">{m.cargo}{m.telefone ? ` · ${m.telefone}` : ''}</p>
                 {!m.ativo && <p className="text-xs font-semibold text-slate-500">Inativo</p>}
               </div>
+              {!somenteLeitura && (<>
               <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" onClick={() => setEditando(m)} aria-label="Editar"><Pencil className="h-4 w-4" /></button>
               <button
                 className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
@@ -61,6 +75,7 @@ export default function Motoristas() {
               >
                 {m.ativo ? <Power className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
               </button>
+              </>)}
             </div>
           ))}
         </div>
@@ -84,6 +99,7 @@ export default function Motoristas() {
 
 function FormMotorista({ motorista, onSalvo, onCancelar }: { motorista?: Motorista; onSalvo: () => void; onCancelar: () => void }) {
   const toast = useToast();
+  const { backend } = useData();
   const [nome, setNome] = useState(motorista?.nome ?? '');
   const [cargo, setCargo] = useState(motorista?.cargo ?? '');
   const [telefone, setTelefone] = useState(motorista?.telefone ?? '');
@@ -94,12 +110,13 @@ function FormMotorista({ motorista, onSalvo, onCancelar }: { motorista?: Motoris
     e.preventDefault();
     setSalvando(true);
     setErro(null);
-    const linha = { nome: nome.trim(), cargo: cargo.trim(), telefone: telefone.trim() || null };
-    const { error } = motorista
-      ? await supabase.from('motoristas').update(linha).eq('id', motorista.id)
-      : await supabase.from('motoristas').insert(linha);
-    setSalvando(false);
-    if (error) return setErro(`Não foi possível salvar: ${mensagemErro(error)}`);
+    try {
+      await backend.salvarMotorista({ nome: nome.trim(), cargo: cargo.trim(), telefone: telefone.trim() || null }, motorista?.id);
+    } catch (err) {
+      return setErro(`Não foi possível salvar: ${mensagemErro(err)}`);
+    } finally {
+      setSalvando(false);
+    }
     toast('sucesso', motorista ? 'Motorista atualizado.' : 'Motorista cadastrado.');
     onSalvo();
   }

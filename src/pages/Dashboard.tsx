@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { AlertTriangle, Car, ChevronLeft, ChevronRight, Clock, Flag, Gauge, Route } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle, Car, ChevronLeft, ChevronRight, Clock, Flag, Gauge, Route, Users } from 'lucide-react';
 import { useReservaAcoes } from '../components/ReservaAcoes';
 import { aguardandoKm, StatusBadge } from '../components/StatusBadge';
 import { useData } from '../lib/DataContext';
@@ -11,7 +12,7 @@ const nomeMes = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric
 const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function Dashboard() {
-  const { reservas, veiculos, veiculoPorId, motoristaPorId, carregando } = useData();
+  const { reservas, veiculos, motoristas, veiculoPorId, motoristaPorId, carregando, somenteLeitura } = useData();
   const { concluir, detalhar } = useReservaAcoes();
   const [mes, setMes] = useState(() => {
     const d = new Date();
@@ -83,6 +84,19 @@ export default function Dashboard() {
           <button className="rounded-md p-1.5 hover:bg-slate-100" onClick={() => mudarMes(1)} aria-label="Próximo mês"><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
+
+      {!carregando && !somenteLeitura && (veiculos.length === 0 || motoristas.length === 0) && (
+        <section className="card border-sicoob-turquesa/40 bg-sicoob-turquesa-claro p-5">
+          <h2 className="font-semibold text-sicoob-escuro">Primeiros passos</h2>
+          <p className="mt-1 text-sm text-slate-700">
+            Cadastre os veículos e os motoristas da frota. Depois disso, use <strong>Nova reserva</strong> para agendar saídas.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {veiculos.length === 0 && <Link to="/veiculos" className="btn-primario"><Car className="h-4 w-4" /> Cadastrar veículos</Link>}
+            {motoristas.length === 0 && <Link to="/motoristas" className="btn-secundario"><Users className="h-4 w-4" /> Cadastrar motoristas</Link>}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <CardResumo icone={Route} titulo="Saídas no mês" valor={String(dados.saidas)} detalhe={`${dados.concluidas} concluídas`} cor="bg-sicoob-escuro" />
@@ -159,8 +173,8 @@ export default function Dashboard() {
                 <LinhaReserva
                   key={r.id}
                   r={r}
-                  onClick={() => concluir(r)}
-                  acao="Informar KM"
+                  onClick={() => (somenteLeitura ? detalhar(r) : concluir(r))}
+                  acao={somenteLeitura ? undefined : 'Informar KM'}
                   placa={veiculoPorId.get(r.veiculo_id)?.placa}
                   cor={veiculoPorId.get(r.veiculo_id)?.cor}
                   motorista={motoristaPorId.get(r.motorista_id)?.nome}

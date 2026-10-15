@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CalendarCheck, CheckCircle2, Loader2 } from 'lucide-react';
-import { ConflitoReservaError, mensagemErro, salvarReserva } from '../lib/api';
+import { ConflitoReservaError, mensagemErro, sobrepoe } from '../lib/backend';
 import { useData } from '../lib/DataContext';
 import { fmtKm, isoDiaLocal, isoHoraLocal, juntarDataHora } from '../lib/format';
 import { useToast } from '../lib/toast';
@@ -19,10 +19,8 @@ interface Props {
   onCancelar: () => void;
 }
 
-const sobrepoe = (aIni: Date, aFim: Date, bIni: Date, bFim: Date) => aIni < bFim && aFim > bIni;
-
 export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
-  const { veiculos, motoristas, reservas, veiculoPorId } = useData();
+  const { backend, veiculos, motoristas, reservas, veiculoPorId } = useData();
   const toast = useToast();
 
   const base = reserva ? new Date(reserva.inicio) : prefill?.data ?? new Date();
@@ -92,7 +90,7 @@ export function ReservaForm({ reserva, prefill, onSalvo, onCancelar }: Props) {
     setSalvando(true);
     setErro(null);
     try {
-      await salvarReserva(
+      await backend.salvarReserva(
         {
           veiculo_id: veiculoId,
           motorista_id: motoristaId,

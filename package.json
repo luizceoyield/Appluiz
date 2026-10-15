@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "build:claude": "tsc -b && vite build --mode claude && node scripts/montar-artifact.mjs"
   },
   "dependencies": {
     "@fullcalendar/core": "6.1.15",
@@ -31,6 +32,7 @@
     "postcss": "8.4.47",
     "tailwindcss": "3.4.13",
     "typescript": "5.6.2",
-    "vite": "5.4.8"
+    "vite": "5.4.8",
+    "vite-plugin-singlefile": "^2.0.2"
   }
 }

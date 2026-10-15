@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 import { Ban, Flag, Pencil } from 'lucide-react';
-import { cancelarReserva, mensagemErro } from '../lib/api';
+import { mensagemErro } from '../lib/backend';
 import { useData } from '../lib/DataContext';
 import { fmtKm, fmtPeriodo } from '../lib/format';
 import { useToast } from '../lib/toast';
 import type { Reserva } from '../lib/types';
 import { ConcluirForm } from './ConcluirForm';
+import { useConfirmar } from './Confirmar';
 import { Modal } from './Modal';
 import { ReservaForm, type PrefillReserva } from './ReservaForm';
 import { StatusBadge } from './StatusBadge';
@@ -28,7 +29,8 @@ interface Acoes {
 const Ctx = createContext<Acoes | null>(null);
 
 export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
-  const { recarregar, veiculoPorId, motoristaPorId } = useData();
+  const { backend, recarregar, veiculoPorId, motoristaPorId, somenteLeitura } = useData();
+  const confirmar = useConfirmar();
   const toast = useToast();
   const [estado, setEstado] = useState<Estado>(null);
   const fechar = useCallback(() => setEstado(null), []);
@@ -40,20 +42,26 @@ export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
   const cancelar = useCallback(
     async (r: Reserva) => {
       const v = veiculoPorId.get(r.veiculo_id);
-      if (!window.confirm(`Cancelar a reserva de ${v?.placa ?? 'veículo'} em ${fmtPeriodo(r.inicio, r.fim)}?\n\nO registro continua guardado no histórico.`)) return;
+      const ok = await confirmar({
+        titulo: 'Cancelar reserva',
+        mensagem: `Cancelar a reserva de ${v?.placa ?? 'veículo'} em ${fmtPeriodo(r.inicio, r.fim)}?\n\nO horário fica livre e o registro continua guardado no histórico.`,
+        confirmar: 'Cancelar reserva',
+        perigo: true,
+      });
+      if (!ok) return;
       try {
-        await cancelarReserva(r.id);
+        await backend.cancelarReserva(r.id);
         toast('sucesso', 'Reserva cancelada. O horário foi liberado.');
         aposGravar();
       } catch (e) {
         toast('erro', `Não foi possível cancelar: ${mensagemErro(e)}`);
       }
     },
-    [veiculoPorId, toast, aposGravar],
+    [veiculoPorId, toast, aposGravar, confirmar, backend],
   );
 
   const acoes: Acoes = {
-    novaReserva: (prefill) => setEstado({ tipo: 'nova', prefill }),
+    novaReserva: (prefill) => (somenteLeitura ? toast('erro', 'Você tem acesso apenas para visualizar.') : setEstado({ tipo: 'nova', prefill })),
     editar: (reserva) => setEstado({ tipo: 'editar', reserva }),
     concluir: (reserva) => setEstado({ tipo: 'concluir', reserva }),
     detalhar: (reserva) => setEstado({ tipo: 'detalhe', reserva }),
@@ -105,7 +113,7 @@ export function ReservaAcoesProvider({ children }: { children: ReactNode }) {
               <Item rotulo="Destino" valor={r.destino ?? '—'} />
               {r.finalidade && <Item rotulo="Finalidade" valor={r.finalidade} span />}
             </dl>
-            {r.status === 'agendada' && (
+            {r.status === 'agendada' && !somenteLeitura && (
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
                 <button className="btn-secundario" onClick={() => cancelar(r)}><Ban className="h-4 w-4" /> Cancelar reserva</button>
                 <button className="btn-secundario" onClick={() => setEstado({ tipo: 'editar', reserva: r })}><Pencil className="h-4 w-4" /> Editar</button>

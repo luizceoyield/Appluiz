@@ -34,7 +34,24 @@ Stack: React + Vite + TypeScript + Tailwind · FullCalendar · Recharts · Supab
 | Backup manual | Botão **Exportar backup** baixa um JSON com todas as tabelas. |
 | Backup do Supabase | **Recomendado:** ative *Point-in-Time Recovery* em *Project Settings → Add-ons* (plano Pro) para restaurar o banco em qualquer momento. |
 
-## Como colocar no ar
+## Versão publicada no claude.ai (sem Supabase)
+
+O app também roda como página do claude.ai, usando o banco de dados embutido da própria página:
+
+```bash
+npm run build:claude   # gera dist-claude/frota.html (arquivo único)
+```
+
+Nessa versão:
+- quem acessa precisa estar logado no claude.ai e ter a página compartilhada com nível **Colaborador**
+  (quem tem nível **Leitor** só visualiza);
+- nada é apagado pelo app: veículos e motoristas são desativados, reservas são canceladas, e cada
+  registro guarda o histórico das versões anteriores;
+- a prevenção de conflito usa uma trava curta por veículo: quem salva relê as reservas do veículo no
+  banco antes de gravar, então duas pessoas não conseguem reservar o mesmo horário ao mesmo tempo;
+- o botão **Exportar backup** baixa um JSON com todos os dados.
+
+## Como colocar no ar (versão Supabase)
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
 2. Em **SQL Editor**, cole e execute `supabase/migrations/20261015000000_gestao_frota.sql`.

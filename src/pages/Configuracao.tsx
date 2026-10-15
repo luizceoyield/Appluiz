@@ -1,8 +1,24 @@
-export default function Configuracao() {
+import logo from '../assets/logo-sicoob-centro.png';
+
+export default function Configuracao({ motivo }: { motivo: 'config' | 'sem-acesso' }) {
+  if (motivo === 'sem-acesso') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+        <div className="card max-w-xl p-8">
+          <img src={logo} alt="Sicoob Centro" className="h-12 w-auto" />
+          <h1 className="mt-6 text-xl font-bold text-sicoob-escuro">Não foi possível abrir os dados da frota</h1>
+          <p className="mt-3 text-sm text-slate-700">
+            Entre na sua conta do claude.ai e abra esta página pelo link compartilhado. Se continuar aparecendo,
+            peça ao responsável pela frota para liberar seu acesso.
+          </p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <div className="card max-w-xl p-8">
-        <img src="/logo-sicoob-centro.png" alt="Sicoob Centro" className="h-12 w-auto" />
+        <img src={logo} alt="Sicoob Centro" className="h-12 w-auto" />
         <h1 className="mt-6 text-xl font-bold text-sicoob-escuro">Conecte o banco de dados</h1>
         <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-slate-700">
           <li>Crie um projeto em <strong>supabase.com</strong>.</li>

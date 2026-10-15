@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Car, Loader2, Pencil, Plus, Power, RotateCcw } from 'lucide-react';
 import { Modal } from '../components/Modal';
-import { mensagemErro } from '../lib/api';
+import { useConfirmar } from '../components/Confirmar';
+import { mensagemErro, PlacaDuplicadaError } from '../lib/backend';
 import { useData } from '../lib/DataContext';
 import { fmtKm } from '../lib/format';
-import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/toast';
 import type { Veiculo } from '../lib/types';
 
@@ -12,8 +12,9 @@ import type { Veiculo } from '../lib/types';
 const CORES = ['#00AE9D', '#003641', '#7DB61C', '#A8B000', '#49479D', '#0E7C86', '#5B8C1A', '#D97706', '#64748B', '#B91C1C'];
 
 export default function Veiculos() {
-  const { veiculos, reservas, recarregar } = useData();
+  const { backend, veiculos, reservas, recarregar, somenteLeitura } = useData();
   const toast = useToast();
+  const confirmar = useConfirmar();
   const [editando, setEditando] = useState<Veiculo | 'novo' | null>(null);
   const [mostrarInativos, setMostrarInativos] = useState(false);
 
@@ -23,10 +24,19 @@ export default function Veiculos() {
     if (v.ativo) {
       const futuras = reservas.filter((r) => r.veiculo_id === v.id && r.status === 'agendada' && new Date(r.fim) > new Date()).length;
       const aviso = futuras ? `\n\nAtenção: este veículo tem ${futuras} reserva(s) agendada(s), que continuarão valendo.` : '';
-      if (!window.confirm(`Desativar ${v.placa}? O histórico é mantido e é possível reativar depois.${aviso}`)) return;
+      const ok = await confirmar({
+        titulo: 'Desativar veículo',
+        mensagem: `Desativar ${v.placa}? O histórico é mantido e é possível reativar depois.${aviso}`,
+        confirmar: 'Desativar',
+        perigo: true,
+      });
+      if (!ok) return;
     }
-    const { error } = await supabase.from('veiculos').update({ ativo: !v.ativo }).eq('id', v.id);
-    if (error) return toast('erro', mensagemErro(error));
+    try {
+      await backend.definirAtivo('veiculos', v.id, !v.ativo);
+    } catch (e) {
+      return toast('erro', mensagemErro(e));
+    }
     toast('sucesso', v.ativo ? 'Veículo desativado.' : 'Veículo reativado.');
     recarregar();
   }
@@ -42,7 +52,7 @@ export default function Veiculos() {
           <label className="flex items-center gap-2 text-xs text-slate-600">
             <input type="checkbox" checked={mostrarInativos} onChange={(e) => setMostrarInativos(e.target.checked)} /> Mostrar inativos
           </label>
-          <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo veículo</button>
+          {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo veículo</button>}
         </div>
       </div>
 
@@ -62,6 +72,7 @@ export default function Veiculos() {
                   <p className="truncate text-sm text-slate-600">{[v.marca, v.modelo, v.ano].filter(Boolean).join(' · ')}</p>
                   <p className="text-xs text-slate-500">Hodômetro: {fmtKm(v.km_atual)}{!v.ativo && ' · Inativo'}</p>
                 </div>
+                {!somenteLeitura && (<>
                 <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" onClick={() => setEditando(v)} aria-label="Editar"><Pencil className="h-4 w-4" /></button>
                 <button
                   className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
@@ -71,6 +82,7 @@ export default function Veiculos() {
                 >
                   {v.ativo ? <Power className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
                 </button>
+                </>)}
               </div>
             </div>
           ))}
@@ -96,6 +108,7 @@ export default function Veiculos() {
 
 function FormVeiculo({ veiculo, corSugerida, onSalvo, onCancelar }: { veiculo?: Veiculo; corSugerida: string; onSalvo: () => void; onCancelar: () => void }) {
   const toast = useToast();
+  const { backend } = useData();
   const [placa, setPlaca] = useState(veiculo?.placa ?? '');
   const [modelo, setModelo] = useState(veiculo?.modelo ?? '');
   const [marca, setMarca] = useState(veiculo?.marca ?? '');
@@ -117,12 +130,12 @@ function FormVeiculo({ veiculo, corSugerida, onSalvo, onCancelar }: { veiculo?: 
       km_atual: Number(km.replace(',', '.')) || 0,
       cor,
     };
-    const { error } = veiculo
-      ? await supabase.from('veiculos').update(linha).eq('id', veiculo.id)
-      : await supabase.from('veiculos').insert(linha);
-    setSalvando(false);
-    if (error) {
-      return setErro(error.code === '23505' ? 'Já existe um veículo com esta placa.' : `Não foi possível salvar: ${mensagemErro(error)}`);
+    try {
+      await backend.salvarVeiculo(linha, veiculo?.id);
+    } catch (err) {
+      return setErro(err instanceof PlacaDuplicadaError ? err.message : `Não foi possível salvar: ${mensagemErro(err)}`);
+    } finally {
+      setSalvando(false);
     }
     toast('sucesso', veiculo ? 'Veículo atualizado.' : 'Veículo cadastrado.');
     onSalvo();

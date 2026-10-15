@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Flag, Loader2 } from 'lucide-react';
-import { concluirReserva, mensagemErro } from '../lib/api';
+import { mensagemErro } from '../lib/backend';
 import { useData } from '../lib/DataContext';
 import { fmtKm, fmtPeriodo } from '../lib/format';
 import { useToast } from '../lib/toast';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function ConcluirForm({ reserva, onConcluido, onCancelar }: Props) {
-  const { veiculoPorId, motoristaPorId } = useData();
+  const { backend, veiculoPorId, motoristaPorId } = useData();
   const toast = useToast();
   const [kmFinal, setKmFinal] = useState('');
   const [salvando, setSalvando] = useState(false);
@@ -30,7 +30,7 @@ export function ConcluirForm({ reserva, onConcluido, onCancelar }: Props) {
     setSalvando(true);
     setErro(null);
     try {
-      await concluirReserva(reserva.id, km);
+      await backend.concluirReserva(reserva.id, km);
       toast('sucesso', `Reserva concluída: ${fmtKm(rodados)} rodados.`);
       onConcluido();
     } catch (err) {
