@@ -57,8 +57,8 @@ export default function Motoristas() {
           <h1 className="titulo-pagina">Motoristas</h1>
           <p className="text-sm text-nevoa-500">{motoristas.filter((m) => m.ativo).length} ativos</p>
         </div>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-nevoa-600">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 whitespace-nowrap text-xs text-nevoa-600">
             <input type="checkbox" checked={mostrarInativos} onChange={(e) => setMostrarInativos(e.target.checked)} /> Mostrar inativos
           </label>
           {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo motorista</button>}
@@ -72,7 +72,7 @@ export default function Motoristas() {
           {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Cadastrar o primeiro motorista</button>}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-4">
           {lista.map((m, i) => {
             const st = estatisticas.get(m.id) ?? { viagens: 0, km: 0 };
             return (

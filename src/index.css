@@ -4,7 +4,8 @@
 
 /* Visual claro e único (sem modo escuro), com cores definidas explicitamente. */
 @layer base {
-  html { color-scheme: light; }
+  html { color-scheme: light; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  input, select, textarea { font-size: 16px; }
   body { @apply bg-nevoa-50 font-sans text-nevoa-900 antialiased; }
   h1, h2, h3 { @apply font-display; text-wrap: balance; }
   :focus-visible { @apply outline-none ring-2 ring-sicoob-turquesa ring-offset-2 ring-offset-white; }
@@ -12,11 +13,11 @@
 
 @layer components {
   .card { @apply rounded-2xl border border-nevoa-200/80 bg-white shadow-cartao; }
-  .card-interativo { @apply card transition duration-200 hover:-translate-y-0.5 hover:border-sicoob-turquesa/50 hover:shadow-elevado; }
+  .card-interativo { @apply card transition-[border-color,box-shadow] duration-200 hover:border-sicoob-turquesa/50 hover:shadow-elevado; }
   .rotulo { @apply mb-1.5 block text-[13px] font-medium text-nevoa-700; }
   .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-nevoa-500; }
   .campo {
-    @apply w-full rounded-xl border border-nevoa-200 bg-white px-3.5 py-2.5 text-sm text-nevoa-900 transition
+    @apply w-full rounded-xl border border-nevoa-200 bg-white px-3.5 py-2.5 text-base leading-6 text-nevoa-900 transition
       placeholder:text-nevoa-300
       hover:border-nevoa-300
       focus:border-sicoob-turquesa focus:outline-none focus:ring-4 focus:ring-sicoob-turquesa/15
@@ -79,8 +80,8 @@
 .fc .fc-daygrid-day-number { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; font-weight: 600; color: #33464a; text-decoration: none; padding: 6px 8px; }
 .fc .fc-day-today .fc-daygrid-day-number { background: #003641; color: #fff; border-radius: 999px; margin: 4px; padding: 2px 8px; }
 .fc .fc-day-other .fc-daygrid-day-number { color: #b9c7c9; }
-.fc .fc-daygrid-event { border-radius: 7px; padding: 2px 6px; cursor: pointer; transition: transform .12s, box-shadow .12s; }
-.fc .fc-daygrid-event:hover { transform: translateY(-1px); box-shadow: 0 4px 10px -4px rgba(0,38,46,.4); }
+.fc .fc-daygrid-event { border-radius: 7px; padding: 2px 6px; cursor: pointer; transition: box-shadow .12s, filter .12s; }
+.fc .fc-daygrid-event:hover { filter: brightness(1.08); box-shadow: 0 4px 10px -4px rgba(0,38,46,.4); }
 .fc .fc-daygrid-more-link { font-size: 11px; font-weight: 600; color: #003641; }
 .fc .fc-event-cancelada { opacity: 0.45; text-decoration: line-through; }
 @media (max-width: 640px) {

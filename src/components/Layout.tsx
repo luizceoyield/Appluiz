@@ -150,7 +150,7 @@ export function Layout() {
         )}
 
         <main className="flex-1 px-4 pb-32 pt-5 md:px-8 md:pb-12 md:pt-5">
-          <div key={local.pathname} className="animate-subir">
+          <div key={local.pathname} className="animate-aparecer">
             <Outlet />
           </div>
         </main>

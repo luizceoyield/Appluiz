@@ -59,7 +59,7 @@ export default function Reservas() {
           <h1 className="titulo-pagina">Saídas e reservas</h1>
           <p className="text-sm text-nevoa-500">Registro de saída, conclusão com KM final e histórico completo</p>
         </div>
-        {!somenteLeitura && <button className="btn-primario self-start" onClick={() => novaReserva()}><Plus className="h-4 w-4" /> Registrar saída</button>}
+        {!somenteLeitura && <button className="btn-primario shrink-0 self-start whitespace-nowrap" onClick={() => novaReserva()}><Plus className="h-4 w-4" /> Registrar saída</button>}
       </div>
 
       <div className="card space-y-3 p-4">
@@ -75,7 +75,7 @@ export default function Reservas() {
           ))}
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
-          <input className="campo" placeholder="Buscar por placa, motorista ou destino…" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <input className="campo" id="busca" placeholder="Buscar placa ou motorista" value={busca} onChange={(e) => setBusca(e.target.value)} />
           <select className="campo" value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)}>
             <option value="">Todos os veículos</option>
             {veiculos.map((v) => <option key={v.id} value={v.id}>{v.placa} — {v.modelo}</option>)}
@@ -87,8 +87,8 @@ export default function Reservas() {
         <p className="card p-10 text-center text-sm text-nevoa-400">Nenhuma reserva encontrada.</p>
       ) : (
         <>
-          {/* Celular: cartões */}
-          <ul className="space-y-3 md:hidden">
+          {/* Celular e tablet: cartões */}
+          <ul className="grid gap-3 sm:grid-cols-2 lg:hidden">
             {lista.map((r, i) => (
               <li key={r.id} className="card-interativo animate-subir cursor-pointer p-4" style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }} onClick={() => detalhar(r)}>
                 <div className="flex items-start justify-between gap-2">
@@ -108,9 +108,9 @@ export default function Reservas() {
             ))}
           </ul>
 
-          {/* Desktop: tabela */}
-          <div className="card hidden overflow-x-auto md:block">
-            <table className="w-full text-sm">
+          {/* Telas largas: tabela */}
+          <div className="card hidden overflow-x-auto lg:block">
+            <table className="w-full whitespace-nowrap text-sm">
               <thead className="bg-nevoa-50 text-left text-[11px] uppercase tracking-[0.1em] text-nevoa-500">
                 <tr>
                   <th className="px-4 py-3">Veículo</th>

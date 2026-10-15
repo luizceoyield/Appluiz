@@ -52,8 +52,8 @@ export default function Veiculos() {
           <h1 className="titulo-pagina">Veículos</h1>
           <p className="text-sm text-nevoa-500">{veiculos.filter((v) => v.ativo).length} ativos na frota</p>
         </div>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-nevoa-600">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 whitespace-nowrap text-xs text-nevoa-600">
             <input type="checkbox" checked={mostrarInativos} onChange={(e) => setMostrarInativos(e.target.checked)} /> Mostrar inativos
           </label>
           {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Novo veículo</button>}
@@ -67,7 +67,7 @@ export default function Veiculos() {
           {!somenteLeitura && <button className="btn-primario" onClick={() => setEditando('novo')}><Plus className="h-4 w-4" /> Cadastrar o primeiro veículo</button>}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-4">
           {lista.map((v, i) => {
             const emUsoAgora = reservas.some(
               (r) => r.veiculo_id === v.id && r.status === 'agendada' && new Date(r.inicio) <= agora && new Date(r.fim) > agora,
@@ -78,7 +78,7 @@ export default function Veiculos() {
                   <svg className="absolute -right-4 -top-6 h-28 w-28 opacity-15" viewBox="0 0 100 100" aria-hidden="true">
                     <path d="M0 0 L50 86 L100 0 Z" fill="#fff" />
                   </svg>
-                  <div className="transition duration-300 group-hover:scale-105">
+                  <div>
                     <Placa placa={v.placa} tamanho="lg" />
                   </div>
                 </div>
@@ -86,14 +86,14 @@ export default function Veiculos() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-display font-semibold text-nevoa-900">{[v.marca, v.modelo].filter(Boolean).join(' ')}</p>
                     <p className="text-xs text-nevoa-500">{v.ano ?? 'Ano não informado'}</p>
-                    <div className="mt-3 flex items-center gap-3">
-                      <span className="num rounded-md bg-sicoob-noite px-2 py-1 font-mono text-xs font-semibold text-white">{fmtKm(v.km_atual)}</span>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <span className="num whitespace-nowrap rounded-md bg-sicoob-noite px-2 py-1 font-mono text-xs font-semibold text-white">{fmtKm(v.km_atual)}</span>
                       {!v.ativo ? (
                         <span className="text-xs font-semibold text-nevoa-500">Inativo</span>
                       ) : emUsoAgora ? (
-                        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#00766b]"><span className="h-1.5 w-1.5 animate-pulsar rounded-full bg-sicoob-turquesa" /> Em uso</span>
+                        <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-[#00766b]"><span className="h-1.5 w-1.5 animate-pulsar rounded-full bg-sicoob-turquesa" /> Em uso</span>
                       ) : (
-                        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#4d7a0c]"><span className="h-1.5 w-1.5 rounded-full bg-sicoob-verde" /> Livre</span>
+                        <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-[#4d7a0c]"><span className="h-1.5 w-1.5 rounded-full bg-sicoob-verde" /> Livre</span>
                       )}
                     </div>
                   </div>
