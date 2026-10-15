@@ -16,8 +16,8 @@ Stack: React + Vite + TypeScript + Tailwind · FullCalendar · Recharts · Supab
 - **Conclusão da reserva**: o app pede o **KM final** e o banco calcula
   `KM rodados = KM final − KM inicial`. O hodômetro do veículo é atualizado automaticamente.
 - **Calendário mensal**, com cada veículo em uma cor (placa visível no dia). Ao clicar em um dia,
-  o app mostra se há reservas naquele dia (e quais veículos estão livres),
-  filtro por veículo e atualização em tempo real.
+  o app mostra se há reservas naquele dia (e quais veículos estão livres).
+  Tem filtro por veículo e atualização em tempo real.
 - **Dashboard**: saídas no mês, KM rodados no mês, veículos disponíveis agora, reservas aguardando
   KM final, gráfico de horários de pico, gráfico de KM rodados por veículo e próximas saídas.
 - **Cadastros** de veículos (placa, marca, modelo, ano, hodômetro, cor no calendário) e
